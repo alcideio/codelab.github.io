@@ -1,0 +1,195 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Alcide Kubernetes Advisor Overview</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="0"
+                  id="advisor-codelab-04"
+                  title="Alcide Kubernetes Advisor Overview"
+                  environment="web"
+                  feedback-link="https://github.com/alcideio/pipeline">
+    
+      <google-codelab-step label="Welcome" duration="1">
+        <p>In this codelab we will create a script that given a <em>GCP Project</em>, we will scan the entire GKE clusters in the project, using <strong>Alcide Kubernetes Advisor</strong>.</p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 300.00px" src="img/c59ad84f35d9d39f.png"></p>
+<p>Alcide Advisor is an agentless Kubernetes audit, compliance and hygiene scanner that&#39;s built to ensure a friction free DevSecOps workflows. Alcide Advisor can be plugged in early in the development process and before moving to production.</p>
+<h3 is-upgraded>With Alcide Advisor, the security checks you can cover includes:</h3>
+<ul>
+<li>Kubernetes infrastructure vulnerability scanning.</li>
+<li>Hunting misplaced secrets, or excessive privileges for secret access.</li>
+<li>Workload hardening from Pod Security to network policies.</li>
+<li>Istio security configuration and best practices.</li>
+<li>Ingress Controllers for security best practices.</li>
+<li>Kubernetes API server access privileges.</li>
+<li>Kubernetes operators security best practices.</li>
+<li>Deployment conformance to labeling, annotating, resource limits and much more ...</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prerequisites" duration="0">
+        <p>In this codelab we will use a <em>GCP Project</em>, to scan the various GKE clusters deployed in this project by using Alcide Kubernetes Advisor.</p>
+<p>Make sure your <a href="https://cloud.google.com/kubernetes-engine/" target="_blank">Google GKE</a> clusters running as part of your <em>GCP Project</em></p>
+<aside class="special"><p>Use ‘gcloud info&#39; to see how your local environment is configured</p>
+</aside>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 800.00px" src="img/59db1bd85aca6cb1.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prepare Your Environment" duration="6">
+        <p>GCP offers multiple sign-in options, if you do not already have your <em>gcloud cli</em> working against your <em>GCP Project</em>, refer to <a href="https://cloud.google.com/sdk/docs/initializing" target="_blank">‘Initializing Cloud SDK&#39;</a> guide.</p>
+<ul>
+<li><a href="https://kubernetes.io/docs/tasks/tools/install-kubectl/" target="_blank">Install and Set Up kubectl</a>.</li>
+<li><a href="https://cloud.google.com/sdk/docs/quickstarts" target="_blank">Install</a> and Set Up <a href="https://cloud.google.com/sdk/docs/initializing" target="_blank">gcloud CLI</a></li>
+</ul>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 400.00px" src="img/50ee30629e4f5330.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Listing GKE Clusters" duration="1">
+        <p>Let&#39;s initially list our GKE clusters.</p>
+<pre><code>gcloud container clusters list --sort-by=NUM_NODES 2&gt; /dev/null  | \
+awk &#39;{ print $1 }&#39; | grep -v NAME
+</code></pre>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 600.00px" src="img/9d0c51d2e80d78f4.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="GKE Cluster Credentials" duration="1">
+        <p>Getting a specific cluster credentials should be straight forward once you have the list of clusters and their resource groups.</p>
+<pre><code>cluster=mycluster &amp;&amp; \
+region=mycluster_rg &amp;&amp; \
+gcloud --quiet container clusters get-credentials --region $region $cluster
+</code></pre>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 600.00px" src="img/9d0c51d2e80d78f4.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Scanning Your GKE Cluster" duration="3">
+        <aside class="special"><p>Download kube-advisor into local directory or any other location in your <em>PATH</em>.</p>
+</aside>
+<h4 is-upgraded>For Linux</h4>
+<pre><code>cd /tmp/training/advisor &amp;&amp;\
+curl -o advisor https://alcide.blob.core.windows.net/generic/stable/linux/advisor &amp;&amp;\
+chmod +x advisor
+</code></pre>
+<h4 is-upgraded>For Mac</h4>
+<pre><code>cd /tmp/training/advisor &amp;&amp;\
+curl -o advisor https://alcide.blob.core.windows.net/generic/stable/darwin/advisor &amp;&amp;\
+chmod +x advisor
+</code></pre>
+<p>Make sure you have Alcide Kubernetes Advisor in your PATH environment variable.<br>We are going to start with an initial cluster scan using the buitin scan profile.</p>
+<pre><code>cluster_name=mycluster &amp;&amp; \
+./advisor validate cluster --cluster-context $cluster_name \
+--namespace-include=* --namespace-exclude=-  --outfile scan.html
+</code></pre>
+<p>Open in your browser the generated report <strong>scan.html</strong> and review the result across the various categories.</p>
+<aside class="special"><p>An overview &amp; use cases of Alcide Kubernetes Advisor. <a href="/codelabs/advisor-codelab-01/" target="_blank">Start Codelab</a></p>
+</aside>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 600.00px" src="img/9d0c51d2e80d78f4.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Putting It Altogether" duration="5">
+        <p>Now that we know how to list our clusters, get its credntials and scan it with <strong>Alcide Advisor</strong>,<br>Lets put everything toghether into a script that we can run.</p>
+<pre><code>#!/usr/bin/env bash
+
+alcide_download_advisor(){
+    curl -o kube-advisor https://alcide.blob.core.windows.net/generic/stable/linux/advisor
+    chmod +x kube-advisor  
+}
+
+alcide_scan_current_cluster(){
+    local outdir=$1
+
+    CURRENT_CONTEXT=`kubectl config current-context`
+    alcide_scan_cluster $outdir ${CURRENT_CONTEXT}
+}
+
+alcide_scan_cluster(){
+    local outdir=$1
+    local context=$2
+    
+    ./kube-advisor --eula-sign validate cluster --cluster-context $context --namespace-include=&#34;*&#34; --outfile $outdir/$context.html
+}
+
+scan_gke_clusters(){
+    local outdir=$1
+    local CLUSTER_NAMES=`gcloud container clusters list --sort-by=NUM_NODES 2&gt; /dev/null  | awk &#39;{ print $1 }&#39; | grep -v NAME`
+
+    #echo ${CLUSTER_NAMES}
+    for cluster in ${CLUSTER_NAMES}
+    do
+        local region=`gcloud container clusters list --filter=name:$cluster | awk &#39;{ print $2}&#39; | grep -v LOCATION`
+        echo Scanning $cluster
+        gcloud --quiet container clusters get-credentials --region $region $cluster
+        alcide_scan_current_cluster $outdir
+    done  
+}
+
+
+
+outdir=$(mktemp -d -t alcide-advisor-XXXXXXXXXX)
+
+
+pushd $outdir
+alcide_download_advisor
+scan_gke_clusters $outdir
+popd
+
+</code></pre>
+<p>The script can be found <a href="https://github.com/alcideio/pipeline/blob/master/scripts/gke-advisor-scan.sh" target="_blank">https://github.com/alcideio/pipeline/blob/master/scripts/gke-advisor-scan.sh</a></p>
+<aside class="special"><p>At this point this script can be plugged as cron job in your pipeline, and publish the reports to<br>an <em>Google Storage Bucket</em> for future reference</p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Summary" duration="1">
+        <p>In this codelab we learned how to:</p>
+<ul>
+<li>List <em>GKE</em> Clusters</li>
+<li>Get <em>GKE</em> cluster credentials</li>
+<li>Scan with <strong>Alcide Advisor</strong> a cluster</li>
+<li>Automate the scan of <em>GKE</em> clusters in a <em>GCP Project</em></li>
+</ul>
+<aside class="special"><p>An overview &amp; use cases of Alcide Kubernetes Advisor can be found in  <a href="/codelabs/advisor-codelab-01/" target="_blank">here</a></p>
+</aside>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 400.00px" src="img/ef0ea234328b5e20.svg"></p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+
+</body>
+</html>

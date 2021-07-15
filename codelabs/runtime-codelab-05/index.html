@@ -1,0 +1,248 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Alcide Runtime Security | Process Whitelist</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="0"
+                  id="runtime-codelab-05"
+                  title="Alcide Runtime Security | Process Whitelist"
+                  environment="web"
+                  feedback-link="https://github.com/alcideio/codelab">
+    
+      <google-codelab-step label="Welcome" duration="1">
+        <p>In this tutorial we will learn about <strong>Process Whitelisting</strong>, which is part of <strong>Alcide Runtime Security (</strong><em>ART</em><strong>)</strong>. We will see how DevOps and/or SecOps teams can enable the detection of unauthorized or compromised processes running on pods in their kubernetes clusters.</p>
+<p class="image-container"><img alt="Alcide Runtime (ART)" style="width: 400.00px" src="img/9d0c51d2e80d78f4.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prerequisites" duration="10">
+        <p>For this tutorial you will need a Kubernetes cluster with enough permissions to deploy resources into it.</p>
+<ul>
+<li><a href="https://kubernetes.io/docs/tasks/tools/install-kubectl/" target="_blank">Install and Set Up kubectl</a>.</li>
+<li><a href="https://kind.sigs.k8s.io/docs/user/quick-start/" target="_blank">Install kind</a>, or any working Kubernetes Cluster</li>
+<li><a href="https://www.alcide.io/Sign+up+to+Alcide+Platform" target="_blank">Alcide Cloud Account</a></li>
+<li>A (free) user account on <a href="https://github.com/" target="_blank">GitHub</a></li>
+<li>A (free) user account on <a href="https://hub.docker.com" target="_blank">DockerHub</a> with the same username as your GitHub account</li>
+</ul>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 800.00px" src="img/59db1bd85aca6cb1.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prepare Your Environment" duration="10">
+        <p>In order to implement <strong>Alcide Runtime Security</strong> features, we will need to onboard your Kubernetes cluster into your <strong>Alcide Cloud Account</strong></p>
+<ol type="1">
+<li>Login to your account: https://yourcompany.cloud.alcide.io</li>
+<li>On the left hand side menu, click on <strong>Create Data Center/Cluster</strong></li>
+<li>Follow the steps in the UI wizard.</li>
+</ol>
+<aside class="special"><p>A step by step deployment guide can be found <a href="https://alcide.atlassian.net/wiki/spaces/PUB/pages/93224961/Deploy+Alcide+Agent+and+Monitor" target="_blank">here</a></p>
+</aside>
+<p>At this point you should be able to see your cluster, worker nodes, and workloads, in the <em>Infrastructure View</em> and the application components in your <em>Application View</em></p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 400.00px" src="img/50ee30629e4f5330.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Create a new GitHub repository" duration="0">
+        <p>For this tutorial, we will leverage GitHub Actions to do our build actions generating the process whitelist checksum.</p>
+<p>Since GitHub Actions run automatically when you push to a repository, you&#39;ll have to create a new repository to add the action to. Please refer to the instructions <a href="https://help.github.com/en/github/getting-started-with-github/create-a-repo" target="_blank">here</a>.</p>
+<p>Of course, if you prefer to use an existing repository that is possible as well.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Create a simple Hello World application" duration="10">
+        <p>Create the following file named <code>app.py</code> in the <code>myapp</code> folder:</p>
+<pre><code>from flask import Flask
+app = Flask(__name__)
+
+@app.route(&#39;/&#39;)
+def hello_world():
+    return &#39;Hello, World!&#39;
+
+if __name__ == &#39;__main__&#39;:
+    app.run(debug=True, host=&#39;0.0.0.0&#39;)
+</code></pre>
+<p>This is a simple Python web server that returns <code>Hello World</code> when opened.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Create a Dockerfile" duration="0">
+        <p>Create the following file named <code>Dockerfile</code> in the root of the new repository:</p>
+<pre><code>FROM ubuntu:xenial
+
+LABEL maintainer=&#34;yourname@organization.net&#34;
+
+RUN apt-get update -y &amp;&amp; \
+    apt-get install -y python-pip python-dev
+
+WORKDIR /
+
+COPY my-app/app.py /
+
+RUN pip install Flask
+
+### This is the Alcide whitelist generator integration ###
+ARG ALCIDE_PROCESS_WHITELIST_HASH_KEY
+ENV ALCIDE_PROCESS_WHITELIST_HASH_KEY ALCIDE_PROCESS_WHITELIST_HASH_KEY
+
+ADD https://alcide.blob.core.windows.net/generic/whitelist-generator/generator /generator
+
+RUN chmod +x /generator &amp;&amp;\
+    /generator -k ${ALCIDE_PROCESS_WHITELIST_HASH_KEY} -i /usr/bin/python &amp;&amp;\
+    rm -f generator
+### End of integration section ###
+
+ENTRYPOINT [ &#34;python&#34; ]
+
+CMD [ &#34;/app.py&#34; ]
+</code></pre>
+<p>This <code>Dockerfile</code> sets up the image for running the Python Flask application and generates a white list entry for the process we want to allow this container to run. In this case, we create a hash for <code>/usr/bin/python</code> because this image will run a <code>python</code> web server.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Create the workflow definition" duration="0">
+        <p>Create the following file named <code>main.yml</code> file in the <code>.github/workflows</code> directory in your repository:</p>
+<pre><code>name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called &#34;build&#34;
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    # Runs a set of commands using the runners shell
+    - name: Run a multi-line script
+      run: |
+        docker login --username ${GITHUB_ACTOR} --password $&#123;&#123; secrets.DOCKER_PASSWORD }}
+        docker build -t ${GITHUB_ACTOR}/my-app:latest .
+        docker push ${GITHUB_ACTOR}/my-app:latest
+      env:
+        ALCIDE_PROCESS_WHITELIST_HASH_KEY: $&#123;&#123; secrets.ALCIDE_PROCESS_WHITELIST_HASH_KEY }}
+</code></pre>
+<p>Add two secrets <code>DOCKER_PASSWORD</code> and <code>ALCIDE_PROCESS_WHITELIST_HASH_KEY</code> to the <a href="https://help.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets" target="_blank">GitHub secrets</a>.</p>
+<ol type="1">
+<li>The <code>DOCKER_PASSWORD</code> is the password of to your docker account (we recommend you use an <a href="https://docs.docker.com/docker-hub/access-tokens/" target="_blank">access token</a> instead of your main password) so the image can be uploaded to the public Docker hub.</li>
+<li>As <code>ALCIDE_PROCESS_WHITELIST_HASH_KEY</code> we will start with an invalid key so the workload will get flagged as unauthorized - enter <code>123abc</code>.</li>
+</ol>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Run the workflow" duration="10">
+        <p>By saving the workflow yaml, GitHub will automatically start running your workflow. Navigate to the output by clicking on the <code>&gt; Actions</code> header item on your main repository page.</p>
+<p class="image-container"><img alt="Overview of running workflow" src="img/a694890aa2012628.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Run the unauthorized workload" duration="10">
+        <p>Now that we have a Docker image built and uploaded to DockerHub, we can run a kubernetes workload on the cluster you have connected to your Alcide Cloud environment.</p>
+<pre><code># create an environment variable with your username so you can copy and paste the kubectl commands
+export USERNAME=&lt;yourusername&gt;
+# spin up our unauthorized workload
+kubectl run --generator=run-pod/v1 process-whitelist-workload --image=${USERNAME}/my-app:latest
+</code></pre>
+<p>When we go to the <code>Infrastructure</code> overview in Alcide Cloud, we will see the following alert (may take 5 to 10 minutes).</p>
+<p class="image-container"><img alt="Unauth workflow error" src="img/3659609c96160baa.png"></p>
+<p>Let&#39;s delete the workload and re-build the Docker image with the correct key.</p>
+<pre><code>kubectl delete process-whitelist-workload
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Correct the key" duration="10">
+        <p>The correct key for your organization can be found within the Alcide Cloud platform at <code>Settings/Keys/Process whitelist</code> under <code>hash key</code> → <code>Show key</code> (direct url: https://yourorganization.cloud.alcide.io/apiKey). We will use this key to generate the  whitelist and later validate its authenticity in runtime.</p>
+<p>Update the existing <a href="https://help.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets" target="_blank">GitHub secret</a> named <code>ALCIDE_PROCESS_WHITELIST_HASH_KEY</code> with the new value.</p>
+<p>To kick off the build process, make an arbitrary change (like creating a <code>README.md</code>) and push it to the repository. Under <code>&gt; Actions</code> we will see a new build job starting.</p>
+<p class="image-container"><img alt="Overview of running workflow" src="img/a694890aa2012628.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Run the workload again" duration="10">
+        <p>Execute the following command again:</p>
+<pre><code>kubectl run --generator=run-pod/v1 --image=${USERNAME}/my-app:latest
+</code></pre>
+<p>We will see the pod workload reappearing in Alcide Cloud without any alert, like so:</p>
+<p class="image-container"><img alt="Auth workflow" src="img/903fff0f385c88af.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Start an unauthorized process" duration="10">
+        <p>Let&#39;s wreak some havoc and simulate an attack on the running pod and a hacker getting shell access to the pod. We won&#39;t actually trigger a Flask vulnerability - <a href="https://snyk.io/vuln/pip:flask" target="_blank">although you could</a> - but rather use <code>kubectl exec</code> to spawn a <code>bash</code> terminal in the container.</p>
+<pre><code>kubectl exec -ti process-whitelist-workload bash
+</code></pre>
+<p>Since we didn&#39;t generate a whitelist entry for <code>bash</code>, once we do this, the workload should get flagged in Alcide Cloud. Again, this may take several moments to show up.</p>
+<p class="image-container"><img alt="Another unauth workflow error" src="img/7f3b4464d4e8ec26.png"></p>
+<p>You see that Process Whitelisting is useful both for detecting both unauthorized/compromised Docker container images as well as hackers compromising the running pod.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Cleanup" duration="0">
+        <p>That&#39;s all folks! Get rid of the pod by running the following command:</p>
+<pre><code>kubectl delete process-whitelist-workload
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Summary" duration="2">
+        <p>In this codelab we covered:</p>
+<ul>
+<li>Create a Docker image with a generated process whitelist config and the correct organization key</li>
+<li>Deploy the container to kubernetes</li>
+<li>See how an unauthorized workload gets flagged</li>
+<li>See how an authorized workload looks</li>
+</ul>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 400.00px" src="img/ef0ea234328b5e20.svg"></p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+
+</body>
+</html>

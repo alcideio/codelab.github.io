@@ -1,0 +1,151 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Alcide Runtime Security | Process Whitelist - Hello Word</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="0"
+                  id="runtime-codelab-06"
+                  title="Alcide Runtime Security | Process Whitelist - Hello Word"
+                  environment="web"
+                  feedback-link="https://github.com/alcideio/codelab">
+    
+      <google-codelab-step label="Welcome" duration="1">
+        <p>In this tutorial we will learn about <strong>Process Whitelisting</strong>, which is part of <strong>Alcide Runtime Security (</strong><em>ART</em><strong>)</strong>. We will see an Hello World example which includes sign a process in Docker image, and then simulate an attack by running an unlisted process and change the whitelisted binary file.</p>
+<p class="image-container"><img alt="Alcide Runtime (ART)" style="width: 400.00px" src="img/9d0c51d2e80d78f4.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prerequisites" duration="10">
+        <p>For this tutorial you will need a Kubernetes cluster with enough permissions to deploy resources into it.</p>
+<ul>
+<li><a href="https://kubernetes.io/docs/tasks/tools/install-kubectl/" target="_blank">Install and Set Up kubectl</a>.</li>
+<li><a href="https://kubernetes.io/docs/tasks/tools/install-minikube/" target="_blank">Install Minikube</a>, or any working Kubernetes Cluster</li>
+<li><a href="https://www.alcide.io/Sign+up+to+Alcide+Platform" target="_blank">Alcide Cloud Account</a></li>
+</ul>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 800.00px" src="img/59db1bd85aca6cb1.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prepare Your Environment" duration="10">
+        <p>In order to implement <strong>Alcide Runtime Security</strong> features, we will need to onboard your Kubernetes cluster into your <strong>Alcide Cloud Account</strong></p>
+<ol type="1">
+<li>Login to your account: https://yourcompany.cloud.alcide.io</li>
+<li>On the left hand side menu, click on <strong>Create Data Center/Cluster</strong></li>
+<li>Follow the steps in the UI wizard.</li>
+</ol>
+<aside class="special"><p>A step by step deployment guide can be found <a href="https://alcide.atlassian.net/wiki/spaces/PUB/pages/93224961/Deploy+Alcide+Agent+and+Monitor" target="_blank">here</a></p>
+</aside>
+<p>At this point you should be able to see your cluster, worker nodes, and workloads, in the <em>Infrastructure View</em> and the application components in your <em>Application View</em></p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 400.00px" src="img/50ee30629e4f5330.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Build a Docker image with a signed process whitelist" duration="10">
+        <h2 is-upgraded>first let&#39;s create a simple binary to represent our app</h2>
+<pre><code>curl -O https://raw.githubusercontent.com/alcideio/codelab.github.io/master/codelabs/runtime-codelab-06/hello.go
+docker run --rm -v &#34;$PWD&#34;:/usr/src/my-app -w /usr/src/my-app golang:latest go build -o my-app -v hello.go
+</code></pre>
+<h2 is-upgraded>and another binary to represent a malicious app</h2>
+<pre><code>curl -O https://raw.githubusercontent.com/alcideio/codelab.github.io/master/codelabs/runtime-codelab-06/malicious.go
+docker run --rm -v &#34;$PWD&#34;:/usr/src/malicious-app -w /usr/src/malicious-app golang:latest go build -o malicious-app -v malicious.go
+</code></pre>
+<h2 is-upgraded>now download the next Dockerfile, edit, and set your ALCIDE_KEY</h2>
+<pre><code>curl -O https://raw.githubusercontent.com/alcideio/codelab.github.io/master/codelabs/runtime-codelab-06/Dockerfile
+vi Dockerfile
+</code></pre>
+<aside class="warning"><p>to get your ALCIDE_KEY, in Alcide UI go to Settings &gt; Keys, and copy your Process Whitelist Hash Key</p>
+</aside>
+<h2 is-upgraded>Make sure you have ‘generator&#39; binary in your working directory. If not, you can download it as so:</h2>
+<pre><code>wget https://alcide.blob.core.windows.net/generic/whitelist-generator/generator
+</code></pre>
+<h2 is-upgraded>build your docker image and upload to your image repo</h2>
+<pre><code>export IMG_NAME=&lt;your_docker_account&gt;/&lt;your_repo&gt;:&lt;tag&gt;
+docker build . -t $IMG_NAME
+docker push $IMG_NAME
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Deploy to Kubernetes" duration="2">
+        <p>Simply deploy to your Kubernetes cluster by copy/paste this</p>
+<pre><code>cat &lt;&lt;EOF | kubectl apply -f - &amp;&amp; kubectl rollout status deployment/pw-demo --watch
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pw-demo
+  labels:
+    app: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: my-app
+        image: $IMG_NAME
+EOF
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Simulate an attack" duration="10">
+        <h2 is-upgraded>first let&#39;s run an unlisted process (the process &#34;mv&#34;)</h2>
+<pre><code>kubectl exec -it $(kubectl get pods -l app=my-app -o custom-columns=:metadata.name --no-headers) mv malicious-app my-app
+</code></pre>
+<p>you should see the next alert in your Events Feed (in Alcide UI):<br>Process whitelist - unlisted process<br><br>If you don&#39;t see this alert, make sure you enabled the &#34;Process Whitelist Hash Key&#34; in the Settings/keys part of the UI.</p>
+<h2 is-upgraded>now let&#39;s try to run the malicious-app (that we just renamed to my-app)</h2>
+<pre><code>kubectl exec -it $(kubectl get pods -l app=my-app -o custom-columns=:metadata.name --no-headers) ./my-app
+</code></pre>
+<p>you should see the next alert in your Events Feed (in Alcide UI):<br>Process whitelist - process hash mismatch</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Summary" duration="2">
+        <p>In this codelab we covered:</p>
+<ul>
+<li>A generation of a docker image with a whitelisted process</li>
+<li>Simulation of process whitelist violation</li>
+</ul>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 400.00px" src="img/ef0ea234328b5e20.svg"></p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+
+</body>
+</html>

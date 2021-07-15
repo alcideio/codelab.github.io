@@ -1,0 +1,218 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Alcide kAudit</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="0"
+                  id="kaudit-codelab-02"
+                  title="Alcide kAudit"
+                  environment="web"
+                  feedback-link="https://github.com/alcideio/kaudit">
+    
+      <google-codelab-step label="Welcome" duration="1">
+        <p><strong>Alcide kAudit</strong> is designed to automatically analyze Kubernetes audit logs to detect anomalous behavior of users and service accounts. kAudit automatically detects security-related issues related to Kubernetes&#39; administrative actions, especially anomalous behavior that can only be detected from observing extended context over multiple activities. In addition, kAudit supports Audit rules to detect violations of organization compliance policies regarding Kubernetes usage. Incident forensics, along with audit statistics, are presented in graphical and tabular summaries for easy investigation and analysis.<br>kAudit can process log from a wide rage of Kubernetes clusters services such as AKS, GKE, EKS as well ass native support, for more details check <a href="https://alcide.atlassian.net/wiki/spaces/PUB/pages/1474887892/Deploy+kAudit" target="_blank">Alcide documentation</a>.</p>
+<p>In this tutorial we will learn how to install kAudit in your environment and it&#39;s infrastructure on AWS EKS.<br>We will deploy a single kAudit analyzing the audit log of a single k8s cluster</p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 200.00px" src="img/1661d7ce47699e28.png"></p>
+<h3 is-upgraded>Alcide kAudit can be used for:</h3>
+<ul>
+<li>Detect and alert on operational and compliance policy violation</li>
+<li>Behavioral based anomaly detection</li>
+<li>Forensics analysis</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prerequisites" duration="5">
+        <p>For this tutorial you will need an EKS cluster, with sufficient priviliges to install resources.</p>
+<ul>
+<li><a href="https://kubernetes.io/docs/tasks/tools/install-kubectl/" target="_blank">Install and Set Up kubectl</a></li>
+<li><a href="https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html" target="_blank">EKS cluster</a></li>
+<li><a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html" target="_blank">AWS CLI</a></li>
+<li>AWS access key of a user with permissions to create IAM roles</li>
+</ul>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 800.00px" src="img/59db1bd85aca6cb1.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prepare Cloud infrastructure" duration="1">
+        <p>Alcide kAudit consumes EKS audit log stream. In the following steps we will configure the required infrastructure components to stream Kubernetes audit logs from your EKS cluster to Alcide kAudit.</p>
+<aside class="special"><p>The following setup assumes audit logs are shipped from the AWS account running an EKS cluster to a separate AWS account hosting the logs ,which Alcide kAudit will consume. This setup will also work in cases where CloudWatch EKS logs and Kinesis are in the same account.</p>
+</aside>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 800.00px" src="img/c6dd52ab6aa3bd49.png"></p>
+<p>Let&#39;s begin by opening your terminal ...</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Configure Kinesis" duration="8">
+        <ul>
+<li>First, we&#39;ll set some environment variables to make the process easier</li>
+</ul>
+<pre><code>export KINESIS_AWS_PROFILE=&lt;AWS Account profile name (from ~/.aws/config)&gt;
+export KINESIS_AWS_REGION=&lt;AWS region&gt;
+export EKS_AWS_PROFILE=&lt;AWS Account profile name (from ~/.aws/config)&gt;
+export EKS_AWS_REGION=&lt;AWS region&gt;
+export CLUSTER_NAME=&lt;EKS cluster name&gt;
+export EKS_ACCOUNT_ID=&lt;EKS AWS account ID&gt;
+</code></pre>
+<p>For example:</p>
+<pre><code>export KINESIS_AWS_PROFILE=auditlogs-account
+export KINESIS_AWS_REGION=eu-west-1
+export EKS_AWS_PROFILE=eks_account
+export EKS_AWS_REGION=eu-west-2
+export CLUSTER_NAME=myCluster
+export EKS_ACCOUNT_ID=123456789012
+</code></pre>
+<ul>
+<li>Clone Alcide kAudit git repository</li>
+</ul>
+<pre><code>cd /tmp
+git clone https://github.com/alcideio/kaudit.git
+cd kaudit
+</code></pre>
+<ul>
+<li>Create Kinesis-stream, logs destination and roles by creating the following CloudFormation Stack</li>
+</ul>
+<pre><code>aws cloudformation --profile=$KINESIS_AWS_PROFILE --region=$KINESIS_AWS_REGION create-stack --stack-name $CLUSTER_NAME-logs \
+--template-body file://deploy/pre-install/aws/cloudformation/logsAccount.json \
+--capabilities CAPABILITY_IAM \
+--parameters ParameterKey=&#34;SourceAccount&#34;,ParameterValue=&#34;$EKS_ACCOUNT_ID&#34; \
+             ParameterKey=&#34;ApplicationComponent&#34;,ParameterValue=&#34;audit-analyzer&#34;
+echo It may take a few minutes...
+aws cloudformation --profile=$KINESIS_AWS_PROFILE --region=$KINESIS_AWS_REGION wait stack-create-complete --stack-name $CLUSTER_NAME-logs
+export Logs_Destination_ARN=$(aws cloudformation --profile=$KINESIS_AWS_PROFILE --region=$KINESIS_AWS_REGION describe-stacks --stack-name $CLUSTER_NAME-logs \
+--query &#39;Stacks[].Outputs[?starts_with(OutputKey, `Destination`) == `true`][].[OutputValue]&#39; --output text)
+if [[ $Logs_Destination_ARN == &#34;arn:aws:logs&#34;* ]]; then; echo &#34;We are ready, you can keep going...&#34;; else echo &#34;We can&#39;t get the Logs Destination ARN&#34;; fi
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Enable EKS Audit logging" duration="5">
+        <ul>
+<li>Enable EKS logging</li>
+</ul>
+<pre><code>aws eks --profile=$EKS_AWS_PROFILE --region=$EKS_AWS_REGION update-cluster-config --name $CLUSTER_NAME \
+    --logging &#39;{&#34;clusterLogging&#34;:[{&#34;types&#34;:[&#34;audit&#34;],&#34;enabled&#34;:true}]}&#39;
+</code></pre>
+<ul>
+<li>Create log subscription filter for a specific EKS cluster using the following Cloudformation stack</li>
+</ul>
+<pre><code>aws cloudformation --profile=$EKS_AWS_PROFILE --region=$EKS_AWS_REGION create-stack --stack-name $CLUSTER_NAME-eks \
+--template-body file://deploy/pre-install/aws/cloudformation/eksAccount.json \
+--parameters ParameterKey=&#34;DestinationARN&#34;,ParameterValue=&#34;$Logs_Destination_ARN&#34; \
+             ParameterKey=&#34;EKSClusterName&#34;,ParameterValue=&#34;$CLUSTER_NAME&#34;
+aws cloudformation --profile=$EKS_AWS_PROFILE --region=$EKS_AWS_REGION wait stack-create-complete --stack-name $CLUSTER_NAME-eks
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Verify Configuration" duration="5">
+        <p class="image-container"><img alt="Alcide Code-to-production security" style="width: 800.00px" src="img/92f1d3734f17a46e.png"></p>
+<ul>
+<li>Run this to validate that logs are shipping to the Kinesis Stream</li>
+</ul>
+<pre><code>if [[ $(echo -n \
+        $(aws kinesis --profile=$KINESIS_AWS_PROFILE --region=$KINESIS_AWS_REGION get-records --shard-iterator \
+          $(aws kinesis --profile=$KINESIS_AWS_PROFILE --region=$KINESIS_AWS_REGION get-shard-iterator \
+          --shard-id shardId-000000000000 \
+          --shard-iterator-type TRIM_HORIZON \
+          --stream-name $CLUSTER_NAME-logs-Stream \
+          --query &#39;ShardIterator&#39;) \
+        --limit 1 --query &#39;Records[].[Data]&#39; --output text) \
+        | base64 -d | zcat | grep messageType) ]]; then
+  echo &#34;We are ready, you can continue :)&#34;
+else
+  echo &#34;The logs still not received, please try again in a few moments...&#34;
+fi
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Generate Deployment" duration="5">
+        <p class="image-container"><img alt="Alcide Code-to-production security" style="width: 800.00px" src="img/92f1d3734f17a46e.png"></p>
+<p>In order to generate Alcide kAudit deployment manifest we will use Helm template</p>
+<ul>
+<li>First, let&#39;s export from the CloudFormation Stack some fields that are required for our kAudit deployment.</li>
+</ul>
+<pre><code>export AWS_AKI=$(aws cloudformation --profile=$KINESIS_AWS_PROFILE --region=$KINESIS_AWS_REGION describe-stacks \
+--stack-name $CLUSTER_NAME-logs --query &#39;Stacks[].Outputs[?starts_with(OutputKey, `kAuditUserKeyID`) == `true`][].[OutputValue]&#39; --output text)
+export AWS_SAK=$(echo -n $(aws cloudformation --profile=$KINESIS_AWS_PROFILE --region=$KINESIS_AWS_REGION describe-stacks \
+--stack-name $CLUSTER_NAME-logs --query &#39;Stacks[].Outputs[?starts_with(OutputKey, `kAuditUserKeySecret`) == `true`][].[OutputValue]&#39; --output text) | base64)
+export AWS_STREAM_NAME=$(aws cloudformation --profile=$KINESIS_AWS_PROFILE --region=$KINESIS_AWS_REGION describe-stacks \
+ --stack-name $CLUSTER_NAME-logs --query &#39;Stacks[].Outputs[?starts_with(OutputKey, `StreamName`) == `true`][].[OutputValue]&#39; --output text)
+</code></pre>
+<ul>
+<li>Generate kAudit deployment file (run this)</li>
+</ul>
+<pre><code>K8S_PROVIDER=E AWS_REGION=$KINESIS_AWS_REGION deploy/install/kaudit-deployment-wizard.sh
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Deploy kAudit" duration="5">
+        <aside class="warning"><p>In production environments it&#39;s recommended to install Alcide kAudit in a cluster dedicated for monitoring purposes instead of on monitored one.</p>
+</aside>
+<p>Create a dedicated Namespace</p>
+<pre><code>kubectl create ns alcide-kaudit
+</code></pre>
+<p>Deploy kAudit</p>
+<pre><code>kubectl apply -f kaudit-$CLUSTER_NAME.yaml
+</code></pre>
+<p>All done! now to access kAudit UI just run this</p>
+<pre><code>kubectl port-forward -n alcide-kaudit service/kaudit-$CLUSTER_NAME 7000:443
+</code></pre>
+<p>Open your browser and go to</p>
+<pre><code>https://127.0.0.1:7000
+</code></pre>
+<aside class="warning"><p>Login using the user alcide</p>
+</aside>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 600.00px" src="img/d04732cc5e51c899.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Summary" duration="2">
+        <p>In this codelab we:</p>
+<ul>
+<li>Enabled the Kubernetes audit logs in EKS.</li>
+<li>Created Kinesis-stream to stream logs from EKS (CloudWatch) to consumers.</li>
+<li>Configured and deployed Alcide kAudit to consue EKS audit logs.</li>
+</ul>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 400.00px" src="img/ef0ea234328b5e20.svg"></p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+
+</body>
+</html>

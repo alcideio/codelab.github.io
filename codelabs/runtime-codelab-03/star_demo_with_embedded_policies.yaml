@@ -1,0 +1,169 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client2
+  namespace: alcide-demo
+  labels:
+    app: client2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: client2
+  template:
+    metadata:
+      labels:
+        app: client2
+      annotations:
+        policy.v1.alcide.io/inbound.ip.1: tcp://any/?ports=9000
+        policy.v1.alcide.io/outbound.service.1: auto://frontend2-svc
+    spec:
+      containers:
+      - name: listener
+        image: gophernet/netcat
+        command:
+          - sh
+          - "-c"
+          - 'while true ; do nc -k -l -p 9000 ; done'
+      - name: connector
+        image: gophernet/netcat
+        ports:
+        - containerPort: 9000
+        command:
+          - sh
+          - "-c"
+          - 'while true ; do sleep 10 ;
+          echo "Hello from client2" | nc -w 2 frontend2-svc 9000 || true ;
+          echo "Hello from client2" | nc -w 2 backend2-svc 9000 || true ; done'
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: client2-svc
+  namespace: alcide-demo
+spec:
+  selector:
+    app: client2
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend2
+  namespace: alcide-demo
+  labels:
+    app: frontend2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend2
+  template:
+    metadata:
+      labels:
+        app: frontend2
+      annotations:
+        policy.v1.alcide.io/inbound.ip.1: tcp://any/?ports=9000
+        policy.v1.alcide.io/outbound.service.1: auto://backend2-svc
+    spec:
+      containers:
+      - name: listener
+        image: gophernet/netcat
+        ports:
+        - containerPort: 9000
+        command:
+          - sh
+          - "-c"
+          - 'while true ; do nc -k -l -p 9000 ; done'
+      - name: connector
+        image: gophernet/netcat
+        command:
+          - sh
+          - "-c"
+          - 'while true ; do sleep 10 ;
+          echo "Hello from frontend2" | nc -w 2 client2-svc 9000 || true ;
+          echo "Hello from frontend2" | nc -w 2 backend2-svc 9000 || true ; done'
+
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend2-svc
+  namespace: alcide-demo
+spec:
+  selector:
+    app: frontend2
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000
+
+
+
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend2
+  namespace: alcide-demo
+  labels:
+    app: backend2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend2
+  template:
+    metadata:
+      labels:
+        app: backend2
+      annotations:
+        policy.v1.alcide.io/inbound.ip.1: tcp://any/?ports=9000
+    spec:
+      containers:
+      - name: listener
+        image: gophernet/netcat
+        ports:
+        - containerPort: 9000
+        command:
+          - sh
+          - "-c"
+          - 'while true ; do nc -k -l -p 9000 ; done'
+      - name: connector
+        image: gophernet/netcat
+        command:
+          - sh
+          - "-c"
+          - 'while true ; do sleep 10 ;
+          echo "Hello from backend2" | nc -w 2 client2-svc 9000 || true ;
+          echo "Hello from backend2" | nc -w 2 frontend2-svc 9000 || true ; done'
+
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend2-svc
+  namespace: alcide-demo
+spec:
+  selector:
+    app: backend2
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000

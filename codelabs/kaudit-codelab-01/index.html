@@ -1,0 +1,151 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Alcide kAudit</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="0"
+                  id="kaudit-codelab-01"
+                  title="Alcide kAudit"
+                  environment="web"
+                  feedback-link="https://github.com/alcideio/kaudit">
+    
+      <google-codelab-step label="Welcome" duration="1">
+        <p><strong>Alcide kAudit</strong> is designed to automatically analyze Kubernetes audit logs to detect anomalous behavior of users and service accounts. kAudit automatically detects security-related issues related to Kubernetes&#39; administrative actions, especially anomalous behavior that can only be detected from observing extended context over multiple activities. In addition, kAudit supports Audit rules to detect violations of organization compliance policies regarding Kubernetes usage. Incident forensics, along with audit statistics, are presented in graphical and tabular summaries for easy investigation and analysis.<br>In this tutorial we will learn about kAudit support for organization compliance and control, Audit Rules, and how you can set up a Audit Rules to monitor specific activities or alerts on it.</p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 300.00px" src="img/1661d7ce47699e28.png"></p>
+<h3 is-upgraded>Alcide kAudit can be used for::</h3>
+<ul>
+<li>Detect and alert on operational and compliance policy violation</li>
+<li>Behavioral based anomaly detection</li>
+<li>Forensics analysis</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prerequisites" duration="10">
+        <p>For this tutorial you will need:</p>
+<ul>
+<li>kAudit to be installed in your environment <a href="https://github.com/alcideio/kaudit/tree/master/deploy/charts/kaudit" target="_blank">kAudit helm chart installation</a></li>
+</ul>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 800.00px" src="img/59db1bd85aca6cb1.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Manage Audit Policy Rules" duration="0">
+        <p>In order to manage Audit Policy Rules, Login to kAudit UI and in the left menu go to Policy &gt; Rules.<br>Here you can find your existing rules, activate/deactivate, edit or delete them.</p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 600.00px" src="img/9d0c51d2e80d78f4.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Use-case 1 - kubectl exec to a Pod" duration="0">
+        <p>In this use-case we&#39;ll detect and notify on a user accessed into a pod using kubectl exec command.</p>
+<h2 is-upgraded>Method</h2>
+<ol type="1">
+<li>To add a new rule use the <em>Add rule</em> button at the top right and choose <em>Rule From Alcide Templates</em>.<br>Choose <em>pod execution</em> and then <em>Save Rule</em>.</li>
+<li>Start a sell interaction to a pod running in the monitored cluster by initiating this command:</li>
+</ol>
+<pre><code>kubectl exec -it &lt;pod_name&gt; sh
+</code></pre>
+<p class="image-container"><img alt="Alcide kAudit security" style="width: 800.00px" src="img/4fa8ebe5cb5a75a5.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Use-case 2 - Port-forward to a database" duration="0">
+        <p>In this use-case we&#39;ll detect and notify on a tunnel opened to a specific network socket.</p>
+<h2 is-upgraded>Method</h2>
+<ol type="1">
+<li>To add a new rule use the <em>Add rule</em> button at the top right and choose <em>New Rule</em>.<ul>
+<li>Rule Name: port-forward-to-db (or any other name)</li>
+<li>Choose <em>Add Condition</em>: verb [ Equal ] create</li>
+<li>Choose <em>Add Condition</em>: resource-type [ Equal ] pods</li>
+<li>Choose <em>Add Condition</em>: subresource [ Equal ] portforward</li>
+<li>Choose <em>Add Condition</em>: resource-name [ Match ] </li>
+</ul>
+</li>
+<li>Open a network channel to a pod running in the monitored cluster by initiating this command:</li>
+</ol>
+<pre><code>kubectl port-forward &lt;pod_name&gt;
+</code></pre>
+<p class="image-container"><img alt="Alcide kAudit security" style="width: 800.00px" src="img/462ad298edb5c402.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Use-case 3 - Read container logs with sensitive data" duration="0">
+        <p>In this use-case we&#39;ll detect and notify about read container logs from a specific namespace that runs workloads that handle senstive data such as card holder data (PCI), health information (HIPAA) etc.</p>
+<h2 is-upgraded>Method</h2>
+<ol type="1">
+<li>To add a new rule use the <em>Add rule</em> button at the top right and choose <em>New Rule</em>.<ul>
+<li>Rule Name: pod-logs (or any other name)</li>
+<li>Choose <em>Add Condition</em>: verb [ Equal ] get</li>
+<li>Choose <em>Add Condition</em>: resource-type [ Equal ] pods</li>
+<li>Choose <em>Add Condition</em>: subresource [ Equal ] log</li>
+<li>Choose <em>Add Condition</em>: resource-namespace [ Equal ] </li>
+</ul>
+</li>
+<li>Watch pod&#39;s logging and outputs in a specific namespace in the monitored cluster by initiating this command:</li>
+</ol>
+<pre><code>kubectl logs -n &lt;your_namespace&gt; &lt;pod_name&gt;
+</code></pre>
+<p class="image-container"><img alt="Alcide kAudit security" style="width: 800.00px" src="img/a61dd622811c2376.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="use-case 4 - Accesses secrets in a specific namespace" duration="0">
+        <p>In this use-case we&#39;ll detect and notify about access to an object of kind &#34;secret&#34; in a specific namespace.</p>
+<h2 is-upgraded>Method</h2>
+<ol type="1">
+<li>To add a new rule use the <em>Add rule</em> button at the top right and choose <em>New Rule</em>.<ul>
+<li>Rule Name: access_secret (or any other name)</li>
+<li>Choose <em>Add Condition</em>: verb [ Match ] get|list|watch</li>
+<li>Choose <em>Add Condition</em>: resource-type [ Equal ] secrets</li>
+<li>Choose <em>Add Condition</em>: resource-namespace [ Equal ] </li>
+</ul>
+</li>
+<li>Access a secret object in a specific namespace in the monitored cluster by initiating this command:</li>
+</ol>
+<pre><code>kubectl get secrets -n &lt;your_namespace&gt; &lt;pod_name&gt; -o json
+</code></pre>
+<p class="image-container"><img alt="Alcide kAudit security" style="width: 800.00px" src="img/22c2fbfe3264c421.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Summary" duration="1">
+        <p>In this codelab we added an automated scan of an application on an kubernetes cluster as a step in your GitHub Actions workflow.</p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 400.00px" src="img/ef0ea234328b5e20.svg"></p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+
+</body>
+</html>

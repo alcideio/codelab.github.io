@@ -1,0 +1,28 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2021-07-15T12:22:11Z",
+  "id": "runtime-codelab-03",
+  "duration": 32,
+  "title": "Alcide Runtime Security | Embedded Firewall Policies | Star Demo",
+  "summary": "Alcide Star Demo",
+  "source": "runtime-codelab-03.md",
+  "theme": "",
+  "status": [
+    "public"
+  ],
+  "category": [
+    "kubernetes",
+    "security",
+    "runtime",
+    "microservice firewall"
+  ],
+  "tags": [
+    "kubernetes"
+  ],
+  "feedback": "https://github.com/alcideio/codelab",
+  "ga": "0",
+  "url": "runtime-codelab-03"
+}

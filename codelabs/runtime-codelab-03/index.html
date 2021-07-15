@@ -1,0 +1,147 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Alcide Runtime Security | Embedded Firewall Policies | Star Demo</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="0"
+                  id="runtime-codelab-03"
+                  title="Alcide Runtime Security | Embedded Firewall Policies | Star Demo"
+                  environment="web"
+                  feedback-link="https://github.com/alcideio/codelab">
+    
+      <google-codelab-step label="Welcome" duration="1">
+        <p>In this tutorial we will learn about <strong>Alcide Embedded Firewall Policies</strong>.<br><strong>Alcide Embedded Firewall Policies</strong> basically enable developers &amp; devops to capture their microservice know-how into a set of firewall rules that creates a whitelisted perimeter at the Pod level.</p>
+<p>The policy embedding, comes in the shape and form of annotating <em>Pod Specification</em> within a deployed resource.<br>So whether this a plain Kubernetes YAML resource, a helm chart, we can capture security policy as code.</p>
+<p class="image-container"><img alt="Alcide Runtime (ART)" style="width: 400.00px" src="img/9d0c51d2e80d78f4.svg"></p>
+<p>Alcide Embedded Policies are created by developers/devops either in Git or as part of an automation pipeline to control the &#34;Allowed&#34; network traffic for the application/micro-service.</p>
+<p>By using Alcide Embedded Policies, new applications are immediately granted with the required access to operate, and only what&#39;s required.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prerequisites" duration="10">
+        <p>For this tutorial you will need a Kubernetes cluster with enough permissions to deploy resources into it.</p>
+<ul>
+<li><a href="https://kubernetes.io/docs/tasks/tools/install-kubectl/" target="_blank">Install and Set Up kubectl</a>.</li>
+<li><a href="https://kubernetes.io/docs/tasks/tools/install-minikube/" target="_blank">Install Minikube</a>, or any working Kubernetes Cluster</li>
+<li><a href="https://www.alcide.io/Sign+up+to+Alcide+Platform" target="_blank">Alcide Cloud Account</a></li>
+</ul>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 800.00px" src="img/59db1bd85aca6cb1.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prepare Your Environment" duration="10">
+        <p>In order to implement <strong>Alcide Runtime Security</strong> features, we will need to onboard your Kubernetes cluster into your <strong>Alcide Cloud Account</strong></p>
+<ol type="1">
+<li>Login to your account: https://yourcompany.cloud.alcide.io</li>
+<li>On the left hand side menu, click on <strong>Create Data Center/Cluster</strong></li>
+<li>Follow the steps in the UI wizard.</li>
+</ol>
+<aside class="special"><p>A step by step deployment guide can be found <a href="https://alcide.atlassian.net/wiki/spaces/PUB/pages/93224961/Deploy+Alcide+Agent+and+Monitor" target="_blank">here</a></p>
+</aside>
+<p>At this point you should be able to see your cluster, worker nodes, and workloads, in the <em>Infrastructure View</em> and the application components in your <em>Application View</em></p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 400.00px" src="img/50ee30629e4f5330.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Embedded Policy Syntax" duration="6">
+        <h2 is-upgraded>Policy Structure</h2>
+<p>Let&#39;s begin with few <em>Alcide Embedded Policy</em> examples:</p>
+<pre><code>policy.v1.alcide.io/outbound.ip.1: tcp://1.1.1.1/?ports=80
+policy.v1.alcide.io/inbound.ip.2: tcp://any/?ports=any
+policy.v1.alcide.io/outbound.dns.1: tcp://amazon.com/?ports=80
+policy.v1.alcide.io/outbound.dns.2: https://*.amazon.com
+policy.v1.alcide.io/outbound.service.1: tcp://my-service/?ports=80
+policy.v1.alcide.io/inbound.service.2: tcp://my-service/?ports=80
+policy.v1.alcide.io/outbound.endpoint.1: tcp://my-workload/?ports=80
+policy.v1.alcide.io/inbound.endpoint.2: https://my-namespace.my-workload
+policy.v1.alcide.io/outbound.namespace.1: tcp://my-namespace/?ports=80
+policy.v1.alcide.io/inbound.namespace.2: tcp://my-namespace/?ports=any
+</code></pre>
+<p>For more details and examples go to <a href="https://alcide.atlassian.net/wiki/spaces/PUB/pages/1506607109/Embedded+Policies" target="_blank">Alcide Documentation</a></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Run Star Demo" duration="3">
+        <p>Create the frontend, backend, and client apps:</p>
+<pre><code>kubectl create namespace alcide-demo
+kubectl create -f https://raw.githubusercontent.com/alcideio/codelab.github.io/master/codelabs/runtime-codelab-03/star_demo.yaml
+</code></pre>
+<ul>
+<li>Go to your account at Alcide Cloud Console, and navigate to the Application view,</li>
+<li>In the upper left side you could see a DropDown menu for filltering clusters and namespaces, default is &#34;All Clusters&#34;</li>
+<li>Oppen the DropDown menu and under your cluster name sellect alcide-demo to filter by this namespace.</li>
+<li>You should see now the 3 new services we just created, each service has full communication access to his neighbors (indicated by the arrows).</li>
+</ul>
+<p class="image-container"><img alt="Alcide Star Demo" style="width: 400.00px" src="img/ce06f59a8a7b0431.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Using Alcide Embedded Firewall Policies" duration="0">
+        <p>We are going to switch Alcide&#39;s Agent running mode - enforcement mode.</p>
+<aside class="warning"><p>Alcide security agents run in <strong>simulation mode</strong>, which means network traffic that violates policy will be logged, but the traffic is not dropped. By changing it to enforcement mode, all entities in your K8s cluster with Alcide&#39;s Embedded will be subjected to active policy enforcement - unallowed network addressed will be blocked</p>
+</aside>
+<pre><code>kubectl set env daemonsets/agent-nodelet -n alcide ALCIDE_WORKLOAD_ENFORCE_MODE=inline &amp;&amp; kubectl rollout status -n alcide daemonset/agent-nodelet --watch &amp;&amp; while [[ ! $(kubectl -n alcide exec -it $(kubectl get pods -n alcide -l app=agent-nodelet -o custom-columns=:metadata.name --no-headers) -- alcide_agent dp wl ls | grep $(kubectl get pods -n alcide-demo -l app=client -o custom-columns=:metadata.name --no-headers)) ]]; do echo &#34;please wait for Alcide agent to be reaady...&#34;; sleep 20; done; echo &#34;Ready! :)&#34;
+</code></pre>
+<p>Now let&#39;s create the same workload but this time with Alcide Embedded Firewall Policies:</p>
+<pre><code>kubectl create -f https://raw.githubusercontent.com/alcideio/codelab.github.io/master/codelabs/runtime-codelab-03/star_demo_with_embedded_policies.yaml
+</code></pre>
+<ul>
+<li>Go to your account at Alcide Cloud Console, and navigate to the Application view,</li>
+<li>In the upper left side you could see a DropDown menu for filltering clusters and namespaces, default is &#34;All Clusters&#34;</li>
+<li>Oppen the DropDown menu and under your cluster name sellect alcide-demo to filter by this namespace.</li>
+<li>You should see now the 3 new services we just created but this time each service can communicate only with allowed neighbors.</li>
+</ul>
+<p class="image-container"><img alt="Alcide Star Demo" style="width: 400.00px" src="img/e580d1594642922f.png"></p>
+<h2 is-upgraded>Reset the environment</h2>
+<p>Delete the alcide-demo Deployment from the previous step and re-deploy it.</p>
+<pre><code>kubectl delete -f https://raw.githubusercontent.com/alcideio/codelab.github.io/master/codelabs/runtime-codelab-03/star_demo_with_embedded_policies.yaml
+kubectl delete -f https://raw.githubusercontent.com/alcideio/codelab.github.io/master/codelabs/runtime-codelab-03/star_demo.yaml
+kubectl delete namespace alcide-demo
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Summary" duration="2">
+        <p>In this codelab we covered:</p>
+<ul>
+<li><em>Alcide Embedded Policy</em> syntax</li>
+<li>Implemented <em>Alcide Embedded Policy</em></li>
+</ul>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 400.00px" src="img/ef0ea234328b5e20.svg"></p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+
+</body>
+</html>

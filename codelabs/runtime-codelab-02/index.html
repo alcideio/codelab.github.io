@@ -1,0 +1,165 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Alcide Runtime Security | Threat Intelligence Engine</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="0"
+                  id="runtime-codelab-02"
+                  title="Alcide Runtime Security | Threat Intelligence Engine"
+                  environment="web"
+                  feedback-link="https://github.com/alcideio/codelab">
+    
+      <google-codelab-step label="Welcome" duration="1">
+        <p>In this tutorial we will learn about <strong>Alcide Threat Intelligence Engine</strong>.<br><strong>Alcide Threat Intelligence Engine</strong> is a module in <strong>Alcide Runtime Security (</strong><em>ART</em><strong>)</strong> that monitors your Kubernetes clusters&#39; and autonomously detects and alerts about suspicious communication in runtime, based on traffic to/from IP &amp; DNS with bad reputation.</p>
+<p class="image-container"><img alt="Alcide Runtime (ART)" style="width: 400.00px" src="img/9d0c51d2e80d78f4.svg"></p>
+<p>A concise definition of Threat Intelligence would be, evidence-based knowledge, including context, mechanisms, indicators, implications and actionable advice, about an existing or emerging menace or hazard to assets that can be used to inform decisions regarding the subject&#39;s response to that menace or hazard.</p>
+<p>Alcide provides out-of-the-box Threat Detection engine equipped with canned analytics and alerts set. Alerts are detected in real-time, allowing Security and DevOps teams to quickly respond and mitigate potential threats.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prerequisites" duration="10">
+        <p>For this tutorial you will need a Kubernetes cluster with enough permissions to deploy resources into it.</p>
+<ul>
+<li><a href="https://kubernetes.io/docs/tasks/tools/install-kubectl/" target="_blank">Install and Set Up kubectl</a>.</li>
+<li><a href="https://kubernetes.io/docs/tasks/tools/install-minikube/" target="_blank">Install Minikube</a>, or any working Kubernetes Cluster</li>
+<li><a href="https://www.alcide.io/Sign+up+to+Alcide+Platform" target="_blank">Alcide Cloud Account</a></li>
+</ul>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 800.00px" src="img/59db1bd85aca6cb1.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prepare Your Environment" duration="10">
+        <p>In order to implement <strong>Alcide Runtime Security</strong> features, we will need to onboard your Kubernetes cluster into your <strong>Alcide Cloud Account</strong></p>
+<ol type="1">
+<li>Login to your account: https://yourcompany.cloud.alcide.io</li>
+<li>On the left hand side menu, click on <strong>Create Data Center/Cluster</strong></li>
+<li>Follow the steps in the UI wizard.</li>
+</ol>
+<aside class="special"><p>A step by step deployment guide can be found <a href="https://alcide.atlassian.net/wiki/spaces/PUB/pages/93224961/Deploy+Alcide+Agent+and+Monitor" target="_blank">here</a></p>
+</aside>
+<p>At this point you should be able to see your cluster, worker nodes, and workloads, in the <em>Infrastructure View</em> and the application components in your <em>Application View</em></p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 400.00px" src="img/50ee30629e4f5330.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Run a simple workload" duration="2">
+        <p>We are going to start with a simple deployment to be run in your cluster.</p>
+<p>Let&#39;s run the deployment, run this:</p>
+<pre><code>cat &lt;&lt;EOF | kubectl apply -f - \
+&amp;&amp; kubectl rollout status deployment/cryptominer-demo --watch
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cryptominer-demo
+  labels:
+    app: alcide-simple-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alcide-simple-app
+  template:
+    metadata:
+      labels:
+        app: alcide-simple-app
+    spec:
+      containers:
+      - name: alcide-simple-app
+        image: busybox
+        command:
+          - sh
+          - &#34;-c&#34;
+          - &#39;wget --spider -q https://www.alcide.io &amp;&gt; /dev/null \
+          &amp;&amp; sleep 3600&#39;
+EOF
+</code></pre>
+<aside class="special"><p>This pod <strong>cryptominer-demo</strong> will communicate only with <em>*.alcide.io</em></p>
+</aside>
+<ol type="1">
+<li>Open Alcide Cloud Console,</li>
+<li>Select <em>Application View</em> tab,</li>
+<li>In the top searchbar type <em>cryptominer-demo</em> (wait for a drop list to appear)</li>
+<li>Click on the <em>filter icon</em> on the right side of the drop menu</li>
+</ol>
+<p>At this point, you should see the network activity between the pod (microservice) <strong>cryptominer-demo</strong> we deployed above and <em>*.alcide.io</em>.</p>
+<aside class="special"><p><em>Press</em> on a directed edge between the two nodes to see network level information.</p>
+</aside>
+<p>If you select, in the right panel, the <em>Alerts</em> tab, there should be no alerts.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Generate Traffic" duration="1">
+        <p>Let&#39;s introduce this pod with some new legitimate traffic to google.com .</p>
+<p>Run the following command:</p>
+<pre><code>kubectl exec -it $(kubectl get pods -l app=alcide-simple-app -o custom-columns=:metadata.name --no-headers) -- sh -c &#34;if wget --spider -q https://www.google.com &amp;&gt; /dev/null; then echo OK; else echo Address is not available; fi&#34;
+
+</code></pre>
+<p>Go back to the Alcide Cloud Console and see the new endpoint shows up</p>
+<p class="image-container"><img style="width: 400.00px" src="img/47bfb96821241328.webp"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Simulate Crypomining Detection" duration="4">
+        <p>We will now simulate communications from <strong>cryptominer-demo</strong> to a domain known to be bitcoin related.<br>In this example <strong>pool.bitcoin.com</strong> will be used</p>
+<pre><code>kubectl exec -it $(kubectl get pods -l app=alcide-simple-app -o custom-columns=:metadata.name --no-headers) -- sh -c &#34;if wget --spider -q https://pool.bitcoin.com &amp;&gt; /dev/null; then echo OK; else echo Address is not available; fi&#34;
+
+</code></pre>
+<p>The pod <strong>cryptominer-demo</strong> will communicate only with <em>pool.bitcoin.com</em></p>
+<ol type="1">
+<li>Open Alcide Cloud Console,</li>
+<li>Select <em>Application View</em> tab,</li>
+<li>In the top searchbar type <em>cryptominer-demo</em> (wait for a drop list to appear)</li>
+<li>Click on the <em>filter icon</em> on the right side of the drop menu</li>
+</ol>
+<aside class="warning"><p>It may take 2-3 minutes to see an alert in the <em>security event feed</em>, due to the a learn window the <em>Anomaly Engine</em> employs at newly created pods.</p>
+</aside>
+<p>Press the <em>Bell icon</em> at the top right. You should see a new <strong>BEHAVIOR ANOMALY</strong> alert dubbed as <em>Reputation hit</em> on our <strong>cryptominer-demo</strong> pod.</p>
+<p class="image-container"><img style="width: 400.00px" src="img/47bfb96821241328.webp"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Summary" duration="1">
+        <p>In this codelab we covered:</p>
+<ul>
+<li>Alcide Cloud Console Application View</li>
+<li><em>Alcide Threat Intelligence Engine</em></li>
+<li>Simulated detection of cryptominer running in your Kubernetes cluster</li>
+</ul>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 400.00px" src="img/ef0ea234328b5e20.svg"></p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+
+</body>
+</html>

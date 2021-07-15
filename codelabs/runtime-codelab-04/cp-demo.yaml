@@ -1,0 +1,29 @@
+---
+name: "Alcide Policy Test"
+description: "Policy description"
+role: "SEC"
+enabled: true
+selectors:
+- key: "NAMESPACE"
+  type: "PROPERTY"
+  operator: "IN"
+  values:
+  - "alcide-cp-demo"
+outRules:
+- action: "ACCEPT"
+  enabled: true
+  negated: false
+  protocol: 108
+  ports:
+  - start: 443
+    end: 443
+  logData:
+    logLevel: "NO_LOG"
+    logLabels:
+    -
+  ruleTargets:
+    - selectors:
+      - type: "DNS"
+        operator: "IN"
+        values:
+        - "www.alcide.io"

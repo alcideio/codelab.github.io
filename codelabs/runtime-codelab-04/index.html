@@ -1,0 +1,223 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Alcide Runtime Security | Cloud Firewall Policies</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="0"
+                  id="runtime-codelab-04"
+                  title="Alcide Runtime Security | Cloud Firewall Policies"
+                  environment="web"
+                  feedback-link="https://github.com/alcideio/codelab">
+    
+      <google-codelab-step label="Welcome" duration="1">
+        <p>In this tutorial we will learn about <strong>Alcide Cloud Firewall Policies</strong>, which are part of <strong>Alcide Runtime Security (</strong><em>ART</em><strong>)</strong>. We will see how  Security and/or Opertion teams can create and manage firewall policy. The policies are effectively application aware <em>Pod</em> segmentation policies to support use cases that are not available as part of Kubernetes native network policies. For example, network policy that limit <em>Pod</em> access to cluster external database provided as a domain name, limit <em>Pod</em> access to 3rd party services such as <em>Slack</em>, address <em>PCI DSS</em> compliance needs, and more.</p>
+<p class="image-container"><img alt="Alcide Runtime (ART)" style="width: 400.00px" src="img/9d0c51d2e80d78f4.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prerequisites" duration="10">
+        <p>For this tutorial you will need a Kubernetes cluster with enough permissions to deploy resources into it.</p>
+<ul>
+<li><a href="https://kubernetes.io/docs/tasks/tools/install-kubectl/" target="_blank">Install and Set Up kubectl</a>.</li>
+<li><a href="https://kubernetes.io/docs/tasks/tools/install-minikube/" target="_blank">Install Minikube</a>, or any working Kubernetes Cluster</li>
+<li><a href="https://www.alcide.io/Sign+up+to+Alcide+Platform" target="_blank">Alcide Cloud Account</a></li>
+</ul>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 800.00px" src="img/59db1bd85aca6cb1.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prepare Your Environment" duration="10">
+        <p>In order to implement <strong>Alcide Runtime Security</strong> features, we will need to onboard your Kubernetes cluster into your <strong>Alcide Cloud Account</strong></p>
+<ol type="1">
+<li>Login to your account: https://yourcompany.cloud.alcide.io</li>
+<li>On the left hand side menu, click on <strong>Create Data Center/Cluster</strong></li>
+<li>Follow the steps in the UI wizard.</li>
+</ol>
+<aside class="special"><p>A step by step deployment guide can be found <a href="https://alcide.atlassian.net/wiki/spaces/PUB/pages/93224961/Deploy+Alcide+Agent+and+Monitor" target="_blank">here</a></p>
+</aside>
+<p>At this point you should be able to see your cluster, worker nodes, and workloads, in the <em>Infrastructure View</em> and the application components in your <em>Application View</em></p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 400.00px" src="img/50ee30629e4f5330.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Policy Definition Example" duration="10">
+        <h2 is-upgraded>Policy Structure</h2>
+<p>Let&#39;s begin with few <em>Alcide Cloud Policy</em> examples before we see the syntax definiton:</p>
+<pre><code>name: &#34;SSH Policy&#34;
+description: &#34;Restrict SSH access to jump-hosts only&#34;
+role: &#34;SEC&#34;
+enabled: true
+priority: 1
+selectors:
+  - type: &#34;PROPERTY&#34;
+    key: &#34;DATACENTERUID&#34;
+    operator: &#34;IN&#34;
+    values:
+    - &#34;AWS&#34;
+  - type: &#34;PROPERTY&#34;
+    key: &#34;CLUSTERUID&#34;
+    operator: &#34;IN&#34;
+    values:
+    - &#34;us-east-1&#34;
+    - &#34;us-east-2&#34;
+    - &#34;us-west-1&#34;
+    - &#34;us-west-2&#34;
+outRules:
+  - action: &#34;ACCEPT&#34;
+    description: &#34;Allow SSH access from jump-host instances&#34;
+    protocol: 109
+    ports:
+    - start: 22
+      end: 22
+    enabled: true
+    logData:
+      logLevel: &#34;FULL_LOG&#34;
+    ruleTargets:
+    - selectors:
+      - type: &#34;LABEL&#34;
+        key: &#34;role&#34;
+        operator: &#34;IN&#34;
+        values:
+        - &#34;jump-host&#34;
+</code></pre>
+<aside class="special"><p>More details about <em>Alcide Cloud Policy</em> syntax and in depth overview can be found <a href="https://alcide.atlassian.net/wiki/spaces/PUB/pages/792723457/Alcide+Cloud+Policies" target="_blank">here</a></p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Your First Cloud Policy" duration="10">
+        <h2 is-upgraded>Run the deployment</h2>
+<p>First, we&#39;ll need to create a new Namespace for our deployment:<br>Just copy &amp; paste this into your terminal and run:</p>
+<pre><code>cat &lt;&lt;EOF | kubectl apply -f -
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: alcide-cp-demo
+EOF
+</code></pre>
+<p>Let&#39;s run a simple deployment:</p>
+<pre><code>cat &lt;&lt;EOF | kubectl apply -f - &amp;&amp; kubectl rollout status -n alcide-cp-demo deployment/cloudpolicy-demo --watch
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudpolicy-demo
+  namespace: alcide-cp-demo
+  labels:
+    app: cp-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cp-demo
+  template:
+    metadata:
+      labels:
+        app: cp-demo
+    spec:
+      containers:
+      - name: cp-demo
+        image: busybox
+        command:
+          - sleep
+          - &#34;3600&#34;
+EOF
+</code></pre>
+<p>Let&#39;s make sure we can access google.com &amp; alcide.io using HTTPS:</p>
+<pre><code>kubectl exec -it -n alcide-cp-demo $(kubectl get pods -n alcide-cp-demo -l app=cp-demo -o custom-columns=:metadata.name --no-headers) -- sh -c &#34;if wget --spider -q -T 5 https://www.google.com &amp;&gt; /dev/null; then echo OK; else echo Address is not available; fi&#34;
+kubectl exec -it -n alcide-cp-demo $(kubectl get pods -n alcide-cp-demo -l app=cp-demo -o custom-columns=:metadata.name --no-headers) -- sh -c &#34;if wget --spider -q -T 5 https://www.alcide.io &amp;&gt; /dev/null; then echo OK; else echo Address is not available; fi&#34;
+</code></pre>
+<h2 is-upgraded>Adding a new Cloud Policy</h2>
+<aside class="warning"><p>Before you continue, make sure your CLI is connected to Alcide, to login use <em>dcvctl login</em></p>
+</aside>
+<p>We will download the <a href="cp-demo.yaml" target="_blank">cloud policy</a> and deploy it to Alcide Cloud Policy Management server.</p>
+<pre><code>curl -o cp-demo.yaml https://raw.githubusercontent.com/alcideio/codelab.github.io/master/codelabs/runtime-codelab-04/cp-demo.yaml &amp;&amp; dcvctl policy set -f cp-demo.yaml
+</code></pre>
+<ul>
+<li>Go to your account at Alcide Cloud Console, and navigate to the Policies view,</li>
+<li>here you can get visibility to All your Cloud policies.</li>
+<li>Notice this is a multi-clusters &amp; multi-cloud view.</li>
+</ul>
+<aside class="warning"><p>Notice that it may take up to 1 minute to become active.</p>
+</aside>
+<h3 is-upgraded>Check it in Simulation mode (default)</h3>
+<p>Initially, let&#39;s initiate traffic to <em>https://www.alcide.io</em> and <em>https://www.google.com</em> and see the drop alerts.<br>Notice that in this mode we&#39;re not block the packets yet.</p>
+<pre><code>kubectl exec -it -n alcide-cp-demo $(kubectl get pods -n alcide-cp-demo -l app=cp-demo -o custom-columns=:metadata.name --no-headers) -- sh -c &#34;if wget --spider -q -T 5 https://www.google.com &amp;&gt; /dev/null; then echo OK; else echo Address is not available; fi&#34;
+</code></pre>
+<pre><code>kubectl exec -it -n alcide-cp-demo $(kubectl get pods -n alcide-cp-demo -l app=cp-demo -o custom-columns=:metadata.name --no-headers) -- sh -c &#34;if wget --spider -q -T 5 https://www.alcide.io &amp;&gt; /dev/null; then echo OK; else echo Address is not available; fi&#34;
+</code></pre>
+<ul>
+<li>Go to your account at Alcide Cloud Console, and navigate to the Application view,</li>
+<li>In the top search bar,  search for <em>cloudpolicy-demo</em> and apply a filter to the view.</li>
+<li>Review the network activity between <em>cloudpolicy-demo</em> and <em>www.alcide.io</em>.</li>
+<li>In the right pane, go to <em>Alerts</em> tab, you <strong>should</strong> see <em>Drop Alerts</em></li>
+</ul>
+<aside class="warning"><p>The traffic is not block - the system is still running in <strong>simulation mode</strong>, and you will see network activity to <em>www.google.com</em></p>
+</aside>
+<h3 is-upgraded>Change Alcide&#39;s Agent to Enfourcement mode</h3>
+<p>We are going to switch Alcide&#39;s Agent running mode - enforcement mode.</p>
+<aside class="warning"><p><strong>All entities in your K8s cluster with Alcide&#39;s Embedded will be subjected to active policy enforcement - unallowed network addressed will be blocked</strong></p>
+</aside>
+<pre><code>kubectl set env daemonsets/agent-nodelet -n alcide ALCIDE_WORKLOAD_ENFORCE_MODE=inline &amp;&amp; kubectl rollout status -n alcide daemonset/agent-nodelet --watch
+</code></pre>
+<h3 is-upgraded>Policy Blocked Traffic</h3>
+<p>Now, lets how we actually block the packets, run this again:</p>
+<pre><code>kubectl exec -it -n alcide-cp-demo $(kubectl get pods -n alcide-cp-demo -l app=cp-demo -o custom-columns=:metadata.name --no-headers) -- sh -c &#34;if wget --spider -q -T 5 https://www.google.com &amp;&gt; /dev/null; then echo OK; else echo Address is not available; fi&#34;
+</code></pre>
+<pre><code>kubectl exec -it -n alcide-cp-demo $(kubectl get pods -n alcide-cp-demo -l app=cp-demo -o custom-columns=:metadata.name --no-headers) -- sh -c &#34;if wget --spider -q -T 5 https://www.alcide.io &amp;&gt; /dev/null; then echo OK; else echo Address is not available; fi&#34;
+</code></pre>
+<ul>
+<li>This time the traffic should be dropped</li>
+</ul>
+<h2 is-upgraded>Reset the environment</h2>
+<p>Delete the cloudpolicy-demo Deployment and the cloud policies we created.</p>
+<pre><code>kubectl delete ns alcide-cp-demo
+dcvctl policy get
+dcvctl policy del &lt;policy_id&gt;
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Summary" duration="2">
+        <p>In this codelab we covered:</p>
+<ul>
+<li><em>Alcide Cloud Policy</em> syntax</li>
+<li>Implemented <em>Alcide Cloud Policy</em></li>
+<li>Alcide&#39;s UI centralised policies view</li>
+</ul>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 400.00px" src="img/ef0ea234328b5e20.svg"></p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+
+</body>
+</html>

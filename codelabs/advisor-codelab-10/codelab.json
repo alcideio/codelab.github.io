@@ -1,0 +1,29 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2021-07-15T12:22:11Z",
+  "id": "advisor-codelab-10",
+  "duration": 17,
+  "title": "Alcide Advisor + GitHub Actions",
+  "summary": "Alcide Kubernetes Advisor | GitHub Actions",
+  "source": "advisor-codelab-10.md",
+  "theme": "",
+  "status": [
+    "public"
+  ],
+  "category": [
+    "kubernetes",
+    "security",
+    "advisor",
+    "github",
+    "actions"
+  ],
+  "tags": [
+    "kubernetes"
+  ],
+  "feedback": "https://github.com/alcideio/pipeline",
+  "ga": "0",
+  "url": "advisor-codelab-10"
+}

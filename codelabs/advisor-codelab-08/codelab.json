@@ -1,0 +1,27 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2021-07-15T12:22:11Z",
+  "id": "advisor-codelab-08",
+  "duration": 32,
+  "title": "Alcide Advisor + Prometheus + Grafana",
+  "summary": "Alcide Advisor + Prometheus + Grafana",
+  "source": "advisor-codelab-08.md",
+  "theme": "",
+  "status": [
+    "public"
+  ],
+  "category": [
+    "kubernetes",
+    "security",
+    "advisor"
+  ],
+  "tags": [
+    "kubernetes"
+  ],
+  "feedback": "https://github.com/alcideio/advisor",
+  "ga": "0",
+  "url": "advisor-codelab-08"
+}

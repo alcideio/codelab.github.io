@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>https://codelab.alcide.io/codelab/kaudit-codelab-eks-onboarding/</loc>
+    <lastmod>2020-05-13T05:00:00+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/categories/</loc>
+    <lastmod>2020-05-13T05:00:00+05:30</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/codelab/</loc>
+    <lastmod>2020-05-13T05:00:00+05:30</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/</loc>
+    <lastmod>2020-05-13T05:00:00+05:30</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/categories/codelabs-kaudit-security/</loc>
+    <lastmod>2020-05-13T05:00:00+05:30</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/codelab/kaudit-codelab-usecases/</loc>
+    <lastmod>2020-04-02T05:00:00+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/archive/</loc>
+    <lastmod>2020-03-29T10:51:47+05:30</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/archive/runtime-codelab-process-whitelisting/</loc>
+    <lastmod>2020-03-29T10:51:47+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/codelab/runtime-codelab-process-whitelisting2/</loc>
+    <lastmod>2020-03-29T10:51:47+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/categories/codelabs-runtime-security/</loc>
+    <lastmod>2020-03-29T10:51:47+05:30</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/codelab/advisor-codelab-cicd-github-actions/</loc>
+    <lastmod>2020-03-26T10:51:47+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/categories/codelabs-advisor/</loc>
+    <lastmod>2020-03-26T10:51:47+05:30</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/codelab/advisor-codelab-cicd-jenkins/</loc>
+    <lastmod>2020-02-25T10:51:47+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/codelab/advisor-codelab-overview/</loc>
+    <lastmod>2020-01-20T10:51:47+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/codelab/advisor-codelab-grafana-integration/</loc>
+    <lastmod>2020-01-19T10:00:00+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/codelab/runtime-codelab-threat-intelligence/</loc>
+    <lastmod>2020-01-02T10:51:47+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/codelab/advisor-codelab-cronjob/</loc>
+    <lastmod>2020-01-01T13:00:00+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/codelab/runtime-codelab-embedded-policies-star-demo/</loc>
+    <lastmod>2019-11-01T10:51:47+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/codelab/advisor-codelab-multi-cluster-aks/</loc>
+    <lastmod>2019-10-26T00:00:01+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/codelab/advisor-codelab-multi-cluster-eks/</loc>
+    <lastmod>2019-10-26T00:00:01+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/codelab/advisor-codelab-multi-cluster-gke/</loc>
+    <lastmod>2019-10-26T00:00:01+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/categories/codelabs/</loc>
+    <lastmod>2019-10-26T00:00:01+05:30</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/codelab/runtime-codelab-cloud-policies/</loc>
+    <lastmod>2019-09-11T10:51:47+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/codelab/runtime-codelab-embedded-policies/</loc>
+    <lastmod>2019-09-11T10:51:47+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/codelab/advisor-codelab-cicd-circleci/</loc>
+    <lastmod>2019-08-11T10:51:47+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/codelab/advisor-codelab-cicd-azure-devops/</loc>
+    <lastmod>2019-07-31T10:51:47+05:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/pages/about/</loc>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/pages/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://codelab.alcide.io/tags/</loc>
+    <priority>0</priority>
+  </url>
+  
+</urlset>

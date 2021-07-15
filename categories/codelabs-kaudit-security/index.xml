@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>codelabs kaudit security on Codelabs | Examples | Tutorials</title>
+    <link>https://codelab.alcide.io/categories/codelabs-kaudit-security/</link>
+    <description>Recent content in codelabs kaudit security on Codelabs | Examples | Tutorials</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 13 May 2020 05:00:00 +0530</lastBuildDate>
+    
+	<atom:link href="https://codelab.alcide.io/categories/codelabs-kaudit-security/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Alcide kAudit with EKS</title>
+      <link>https://codelab.alcide.io/codelab/kaudit-codelab-eks-onboarding/</link>
+      <pubDate>Wed, 13 May 2020 05:00:00 +0530</pubDate>
+      
+      <guid>https://codelab.alcide.io/codelab/kaudit-codelab-eks-onboarding/</guid>
+      <description>Alcide kAudit is designed to automatically analyze Kubernetes audit logs to detect anomalous behavior of users and service accounts. kAudit automatically detects security-related issues related to Kubernetes&amp;rsquo; administrative actions, especially anomalous behavior that can only be detected from observing extended context over multiple activities. In addition, kAudit supports Audit rules to detect violations of organization compliance policies regarding Kubernetes usage. Incident forensics, along with audit statistics, are presented in graphical and tabular summaries for easy investigation and analysis.</description>
+    </item>
+    
+    <item>
+      <title>kAudit Use-Cases</title>
+      <link>https://codelab.alcide.io/codelab/kaudit-codelab-usecases/</link>
+      <pubDate>Thu, 02 Apr 2020 05:00:00 +0530</pubDate>
+      
+      <guid>https://codelab.alcide.io/codelab/kaudit-codelab-usecases/</guid>
+      <description>Alcide kAudit is designed to automatically analyze Kubernetes audit logs to detect anomalous behavior of users and service accounts. kAudit automatically detects security-related issues related to Kubernetes&amp;rsquo; administrative actions, especially anomalous behavior that can only be detected from observing extended context over multiple activities. In addition, kAudit supports Audit rules to detect violations of organization compliance policies regarding Kubernetes usage. Incident forensics, along with audit statistics, are presented in graphical and tabular summaries for easy investigation and analysis.</description>
+    </item>
+    
+  </channel>
+</rss>

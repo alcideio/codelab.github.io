@@ -1,0 +1,28 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2021-07-15T12:22:11Z",
+  "id": "runtime-codelab-05",
+  "duration": 83,
+  "title": "Alcide Runtime Security | Process Whitelist",
+  "summary": "Alcide Cloud Policies",
+  "source": "runtime-codelab-05.md",
+  "theme": "",
+  "status": [
+    "public"
+  ],
+  "category": [
+    "kubernetes",
+    "security",
+    "runtime",
+    "process whitelist"
+  ],
+  "tags": [
+    "kubernetes"
+  ],
+  "feedback": "https://github.com/alcideio/codelab",
+  "ga": "0",
+  "url": "runtime-codelab-05"
+}

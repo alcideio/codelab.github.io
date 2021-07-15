@@ -1,0 +1,215 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Alcide Kubernetes Advisor Overview</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="0"
+                  id="advisor-codelab-06"
+                  title="Alcide Kubernetes Advisor Overview"
+                  environment="web"
+                  feedback-link="https://github.com/alcideio/pipeline">
+    
+      <google-codelab-step label="Welcome" duration="1">
+        <p>In this codelab we will create a script that given a <em>AWS Region</em>, we will scan the entire EKS clusters in the project, using <strong>Alcide Kubernetes Advisor</strong>.</p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 300.00px" src="img/c59ad84f35d9d39f.png"></p>
+<p>Alcide Advisor is an agentless Kubernetes audit, compliance and hygiene scanner that&#39;s built to ensure a friction free DevSecOps workflows. Alcide Advisor can be plugged in early in the development process and before moving to production.</p>
+<h3 is-upgraded>With Alcide Advisor, the security checks you can cover includes:</h3>
+<ul>
+<li>Kubernetes infrastructure vulnerability scanning.</li>
+<li>Hunting misplaced secrets, or excessive privileges for secret access.</li>
+<li>Workload hardening from Pod Security to network policies.</li>
+<li>Istio security configuration and best practices.</li>
+<li>Ingress Controllers for security best practices.</li>
+<li>Kubernetes API server access privileges.</li>
+<li>Kubernetes operators security best practices.</li>
+<li>Deployment conformance to labeling, annotating, resource limits and much more ...</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prerequisites" duration="0">
+        <p>In this codelab we will use a <em>AWS</em>, to scan the various EKS clusters deployed in this project by using Alcide Kubernetes Advisor.</p>
+<p>Make sure your <a href="https://aws.amazon.com/eks/" target="_blank">Amazon EKS</a> clusters are running as part of your <em>AWS Region</em></p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 800.00px" src="img/59db1bd85aca6cb1.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prepare Your Environment" duration="6">
+        <p>AWS offers multiple sign-in options, if you do not already have your <em>aws cli</em> working against your <em>AWS Account</em>, refer to <a href="https://aws.amazon.com/cli/" target="_blank">‘AWS Command Line Interface&#39;</a>.<br>Make sure your&#39;re using an IAM user with permmitions to your <a href="https://aws.amazon.com/eks/" target="_blank">Amazon EKS</a> clusters and the default region is where your clusters are running.</p>
+<ul>
+<li><a href="https://kubernetes.io/docs/tasks/tools/install-kubectl/" target="_blank">Install and Set Up kubectl</a>.</li>
+<li><a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html" target="_blank">Install</a> and Set Up <a href="https://aws.amazon.com/cli/" target="_blank">aws CLI</a></li>
+</ul>
+<aside class="special"><p>Use ‘aws iam get-user&#39; to see the configured user</p>
+</aside>
+<p>Use ‘aws configure get region&#39; to see the configured region</p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 400.00px" src="img/50ee30629e4f5330.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Listing EKS Clusters" duration="1">
+        <p>Let&#39;s initially list our EKS clusters.</p>
+<pre><code>aws eks list-clusters --output text | cut -c10-
+</code></pre>
+<p>or</p>
+<pre><code>aws eks list-clusters | jq -c &#39;.[][]&#39; | tr -d &#39;&#34;&#39;
+</code></pre>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 600.00px" src="img/9d0c51d2e80d78f4.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="EKS Cluster Credentials" duration="1">
+        <p>Getting a specific cluster credentials should be straight forward once you have the list of clusters and their resource groups.</p>
+<pre><code>local KUBECONFIG=/tmp/advisor-config &amp;&amp; \
+local cluster=&lt;mycluster&gt; &amp;&amp; \
+local region=&lt;mycluster_rg&gt; &amp;&amp; \
+aws eks update-kubeconfig --name $cluster --alias $cluster --region $region
+</code></pre>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 600.00px" src="img/9d0c51d2e80d78f4.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Scanning Your EKS Cluster" duration="3">
+        <aside class="special"><p>Download kube-advisor into local directory or any other location in your <em>PATH</em>.</p>
+</aside>
+<h4 is-upgraded>For Linux</h4>
+<pre><code>cd /tmp/training/advisor &amp;&amp;\
+curl -o advisor https://alcide.blob.core.windows.net/generic/stable/linux/advisor &amp;&amp;\
+chmod +x advisor
+</code></pre>
+<h4 is-upgraded>For Mac</h4>
+<pre><code>cd /tmp/training/advisor &amp;&amp;\
+curl -o advisor https://alcide.blob.core.windows.net/generic/stable/darwin/advisor &amp;&amp;\
+chmod +x advisor
+</code></pre>
+<p>Make sure you have Alcide Kubernetes Advisor in your PATH environment variable.<br>We are going to start with an initial cluster scan using the buitin scan profile.</p>
+<pre><code>cluster_name=&lt;mycluster&gt; &amp;&amp; \
+./advisor validate cluster --cluster-context $cluster_name \
+--namespace-include=* --namespace-exclude=-  --outfile scan.html
+</code></pre>
+<p>Open in your browser the generated report <strong>scan.html</strong> and review the result across the various categories.</p>
+<aside class="special"><p>An overview &amp; use cases of Alcide Kubernetes Advisor. <a href="/codelabs/advisor-codelab-01/" target="_blank">Start Codelab</a></p>
+</aside>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 600.00px" src="img/9d0c51d2e80d78f4.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Putting It Altogether" duration="5">
+        <p>Now that we know how to list our clusters, get its credntials and scan it with <strong>Alcide Advisor</strong>,<br>Lets put everything toghether into a script that we can run.</p>
+<pre><code>#!/usr/bin/env bash
+
+alcide_download_advisor(){
+    echo &#34;Downloading Alcide Advisor&#34;
+    if [[ &#34;$OSTYPE&#34; == &#34;linux-gnu&#34; ]]; then
+        # Linux
+        local os=&#34;linux&#34;
+    elif [[ &#34;$OSTYPE&#34; == &#34;darwin&#34;* ]]; then
+        # Mac OSX
+        local os=&#34;darwin&#34;
+    else
+        echo &#34;Unsupported OS, Currently Alcide Advisor is supported on Linux or MacOS only&#34;
+        exit
+    fi
+
+    curl -o kube-advisor https://alcide.blob.core.windows.net/generic/stable/$os/advisor
+    chmod +x kube-advisor
+}
+
+alcide_scan_current_cluster(){
+    local outdir=$1
+    local CURRENT_CONTEXT=`kubectl config current-context`
+
+    if [[ $(kubectl auth can-i get po 2&gt; /dev/null) == &#34;yes&#34; ]]; then
+        echo Scanning $cluster
+        alcide_scan_cluster $outdir ${CURRENT_CONTEXT}
+    else
+        echo &#34;The current user doesn&#39;t have read permissions to the cluster: ${CURRENT_CONTEXT}&#34;
+    fi
+}
+
+alcide_scan_cluster(){
+    local outdir=$1
+    local context=$2
+    
+    ./kube-advisor --eula-sign validate cluster --cluster-context $context --namespace-include=&#34;*&#34; --outfile $outdir/$context.html
+}
+
+scan_eks_clusters(){
+    local outdir=$1
+    local CLUSTER_NAMES=`aws eks list-clusters | jq -c &#39;.[][]&#39; | tr -d &#39;&#34;&#39;`
+    local KUBECONFIG=$outdir/advisor-config
+
+    #echo ${CLUSTER_NAMES}
+    for cluster in ${CLUSTER_NAMES}
+    do
+        aws eks update-kubeconfig --name $cluster --alias $cluster
+        alcide_scan_current_cluster $outdir
+    done  
+}
+
+
+
+outdir=$(mktemp -d -t alcide-advisor-XXXXXXXXXX)
+
+
+pushd $outdir
+alcide_download_advisor
+scan_eks_clusters $outdir
+popd
+
+</code></pre>
+<p>The script can be found <a href="https://github.com/alcideio/pipeline/blob/master/scripts/eks-advisor-scan.sh" target="_blank">https://github.com/alcideio/pipeline/blob/master/scripts/eks-advisor-scan.sh</a></p>
+<aside class="special"><p>At this point this script can be plugged as cron job in your pipeline, and publish the reports to<br>an <em>AWS S3 Bucket</em> for future reference</p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Summary" duration="1">
+        <p>In this codelab we learned how to:</p>
+<ul>
+<li>List <em>EKS</em> Clusters</li>
+<li>Get <em>EKS</em> cluster credentials</li>
+<li>Scan with <strong>Alcide Advisor</strong> a cluster</li>
+<li>Automate the scan of <em>EKS</em> clusters in a <em>AWS Region</em></li>
+</ul>
+<aside class="special"><p>An overview &amp; use cases of Alcide Kubernetes Advisor can be found in  <a href="/codelabs/advisor-codelab-01/" target="_blank">here</a></p>
+</aside>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 400.00px" src="img/ef0ea234328b5e20.svg"></p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+
+</body>
+</html>

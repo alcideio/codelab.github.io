@@ -1,0 +1,138 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Alcide Advisor &#43; Prometheus &#43; Grafana</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="0"
+                  id="advisor-codelab-08"
+                  title="Alcide Advisor &#43; Prometheus &#43; Grafana"
+                  environment="web"
+                  feedback-link="https://github.com/alcideio/advisor">
+    
+      <google-codelab-step label="Welcome" duration="1">
+        <p>In this tutorial we will learn how to integrate <strong>Alcide Advisor</strong> with <strong>Prometheus</strong> and <strong>Grafana</strong> in order to gain security observability of your Kubernetes cluster hygiene and risk by expsoing Alcide Advisor&#39;s findings as security metrics.</p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 300.00px" src="img/d4129c1769aa93bb.png"></p>
+<p>Alcide Advisor is an agentless Kubernetes audit, compliance and hygiene scanner that&#39;s built to ensure a friction free DevSecOps workflows. Alcide Advisor can be plugged in early in the development process and before moving to production.</p>
+<h3 is-upgraded>With Alcide Advisor, the security checks you can cover includes:</h3>
+<ul>
+<li>Kubernetes infrastructure vulnerability scanning.</li>
+<li>Hunting misplaced secrets, or excessive privileges for secret access.</li>
+<li>Workload hardening from Pod Security to network policies.</li>
+<li>Istio security configuration and best practices.</li>
+<li>Ingress Controllers for security best practices.</li>
+<li>Kubernetes API server access privileges.</li>
+<li>Kubernetes operators security best practices.</li>
+<li>Deployment conformance to labeling, annotating, resource limits and much more ...</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prerequisites" duration="10">
+        <p>For this tutorial you will need a Kubernetes cluster with enough permissions to deploy resources into it.</p>
+<ul>
+<li><a href="https://kubernetes.io/docs/tasks/tools/install-kubectl/" target="_blank">Install and Set Up kubectl</a>.</li>
+<li><a href="https://kubernetes.io/docs/tasks/tools/install-minikube/" target="_blank">Install Minikube</a>, or any working Kubernetes Cluster</li>
+<li><a href="https://github.com/coreos/prometheus-operator" target="_blank">Prometheus Operator</a></li>
+<li><a href="https://www.alcide.io/Sign+up+to+Alcide+Platform" target="_blank">Alcide Cloud Account</a></li>
+</ul>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 800.00px" src="img/59db1bd85aca6cb1.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prepare Your Environment" duration="10">
+        <p>In order to run <strong>Alcide Advisor Scan</strong>, we will need to onboard your Kubernetes cluster into your <strong>Alcide Cloud Account</strong></p>
+<ol type="1">
+<li>Login to your account: https://yourcompany.cloud.alcide.io</li>
+<li>On the left hand side menu, click on <strong>Create Data Center/Cluster</strong></li>
+<li>Choose <strong>Install Alcide Advisor as SaaS</strong></li>
+<li>Follow the steps in the UI wizard.</li>
+</ol>
+<p>At this point you should be able to see your cluster, worker nodes, and workloads, in the <em>Infrastructure View</em></p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 400.00px" src="img/50ee30629e4f5330.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Expose Prometheus Metrics Endpoint" duration="3">
+        <p>In order to expose metrics through Alcide&#39;s deployment, we need to enable Alcide Advisor prometheus metrics endpoint.<br>This boils down to setting a parameter through an environment variable:</p>
+<pre><code>kubectl set env deployment/kubemon -n alcide ALCIDE_ENABLE_METRICS_ENDPOINT=&#34;true&#34;
+</code></pre>
+<p>Now let&#39;s check that our pod exposes the metrics, Run this:</p>
+<pre><code>kubectl port-forward -n alcide $(kubectl get pods -n alcide -l app=kubemon -o custom-columns=:metadata.name --no-headers) 6666:6666
+</code></pre>
+<p>In your browser, go to <strong>http://localhost:6666/metrics</strong> (may take few seconds to become available)</p>
+<aside class="special"><p>At this point you should see a message that says # Nothing to scrape at this point</p>
+</aside>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 600.00px" src="img/9d0c51d2e80d78f4.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Add Prometheus Service Monitor" duration="3">
+        <p>In order for Prometheus to scrape our security metrics we need to deploy a <strong>ServiceMonitor</strong> object in our cluster as well as <strong>Service</strong> that directs the <strong>ServiceMonitor</strong> to Alcide Advisor metrics endpoint.</p>
+<pre><code>kubectl apply -f https://raw.githubusercontent.com/alcideio/advisor/master/monitoring/grafana/advisor-servicemonitor.yaml
+</code></pre>
+<aside class="special"><p>At this point we completed the configuration and ready to run a scan ...</p>
+</aside>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 400.00px" src="img/ef0ea234328b5e20.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Consume security metrics in Grafana" duration="3">
+        <h2 is-upgraded>Add Alcide Advisor Reference Grafana Dashboard</h2>
+<aside class="special"><p>Login into your Grafana and add the dashboard https://raw.githubusercontent.com/alcideio/advisor/master/monitoring/grafana/alcide-advisor-grafana.json</p>
+</aside>
+<p>Login into your Alcide cloud account <strong>https://yourorganizationname.cloud.alcide.io/advisorProfile</strong></p>
+<p>Run a scan using one of the profiles by:</p>
+<ul>
+<li>Click on the 3-dots button of the profile you would like to scan</li>
+<li>Click <strong>Scan Now</strong> menu option</li>
+</ul>
+<h2 is-upgraded>Grafana Screen Shot</h2>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 600.00px" src="img/c9963950f7d89ebc.png"></p>
+<aside class="special"><p>You can customize your dashboard, and configure alerts based on changes in the security metrics, that fit your use case.</p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Additional References" duration="2">
+        <h2 is-upgraded>CI+CD Integration samples</h2>
+<p>See <a href="https://github.com/alcideio/pipeline" target="_blank">https://github.com/alcideio/pipeline</a></p>
+<h2 is-upgraded>Alcide Kubernetes Advisor | Prometheus + Grafana</h2>
+<p>See <a href="https://github.com/alcideio/advisor/tree/master/monitoring/grafana" target="_blank">https://github.com/alcideio/advisor/tree/master/monitoring/grafana</a></p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 700.00px" src="img/9d0c51d2e80d78f4.svg"></p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+
+</body>
+</html>

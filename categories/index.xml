@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Categories on Codelabs | Examples | Tutorials</title>
+    <link>https://codelab.alcide.io/categories/</link>
+    <description>Recent content in Categories on Codelabs | Examples | Tutorials</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 13 May 2020 05:00:00 +0530</lastBuildDate>
+    
+	<atom:link href="https://codelab.alcide.io/categories/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>codelabs kaudit security</title>
+      <link>https://codelab.alcide.io/categories/codelabs-kaudit-security/</link>
+      <pubDate>Wed, 13 May 2020 05:00:00 +0530</pubDate>
+      
+      <guid>https://codelab.alcide.io/categories/codelabs-kaudit-security/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>codelabs runtime security</title>
+      <link>https://codelab.alcide.io/categories/codelabs-runtime-security/</link>
+      <pubDate>Sun, 29 Mar 2020 10:51:47 +0530</pubDate>
+      
+      <guid>https://codelab.alcide.io/categories/codelabs-runtime-security/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>codelabs advisor</title>
+      <link>https://codelab.alcide.io/categories/codelabs-advisor/</link>
+      <pubDate>Thu, 26 Mar 2020 10:51:47 +0530</pubDate>
+      
+      <guid>https://codelab.alcide.io/categories/codelabs-advisor/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>codelabs</title>
+      <link>https://codelab.alcide.io/categories/codelabs/</link>
+      <pubDate>Sat, 26 Oct 2019 00:00:01 +0530</pubDate>
+      
+      <guid>https://codelab.alcide.io/categories/codelabs/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

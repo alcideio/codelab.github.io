@@ -1,0 +1,123 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Alcide Advisor Cron Job</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="0"
+                  id="advisor-codelab-07"
+                  title="Alcide Advisor Cron Job"
+                  environment="web"
+                  feedback-link="https://github.com/alcideio/pipeline">
+    
+      <google-codelab-step label="Welcome" duration="1">
+        <p>In this tutorial we will learn about <strong>Alcide Kubernetes Advisor</strong>, and how we can implement continuous security and cluster hygiene for one or more Kubernetes clusters.</p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 300.00px" src="img/c59ad84f35d9d39f.png"></p>
+<p>Alcide Advisor is an agentless Kubernetes audit, compliance and hygiene scanner that&#39;s built to ensure a friction free DevSecOps workflows. Alcide Advisor can be plugged in early in the development process and before moving to production.</p>
+<h3 is-upgraded>With Alcide Advisor, the security checks you can cover includes:</h3>
+<ul>
+<li>Kubernetes infrastructure vulnerability scanning.</li>
+<li>Hunting misplaced secrets, or excessive privileges for secret access.</li>
+<li>Workload hardening from Pod Security to network policies.</li>
+<li>Istio security configuration and best practices.</li>
+<li>Ingress Controllers for security best practices.</li>
+<li>Kubernetes API server access privileges.</li>
+<li>Kubernetes operators security best practices.</li>
+<li>Deployment conformance to labeling, annotating, resource limits and much more ...</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prerequisites" duration="7">
+        <p><em>If you already have a running kubernetes cluster you can work with you can skip this step</em></p>
+<p>For this tutorial you will need a Kubernetes cluster with enough permissions to deploy resources into it.</p>
+<ul>
+<li><a href="https://kubernetes.io/docs/tasks/tools/install-kubectl/" target="_blank">Install and Set Up kubectl</a>.</li>
+<li><a href="https://kubernetes.io/docs/tasks/tools/install-minikube/" target="_blank">Install Minikube</a>, or any working Kubernetes Cluster</li>
+<li><a href="https://helm.sh/docs/intro/install/" target="_blank">Install Helm</a></li>
+<li><a href="https://slack.com/intl/en-il/help/articles/215770388-Create-and-regenerate-API-tokens" target="_blank">Create and regenerate Slack API tokens</a></li>
+</ul>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 800.00px" src="img/59db1bd85aca6cb1.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prepare Your Environment" duration="1">
+        <h3 is-upgraded>Clone Alcide Advisor Git repo</h3>
+<pre><code>cd /tmp
+git clone https://github.com/alcideio/advisor.git
+</code></pre>
+<h3 is-upgraded>Go to the Helm chart named cluster-job and edit values.yaml file</h3>
+<pre><code>cd advisor/deploy/charts/alcide-advisor-cronjob/
+vi values.yaml
+</code></pre>
+<p>Find the next lines and set your Slack Channel and Token:</p>
+<pre><code>slack:
+  channel: &lt;Your_Slack_Channel&gt;
+  token: &lt;Your_Slack_API_Token&gt;
+</code></pre>
+<aside class="special"><p>Note that the default configuration run Advisor&#39;s scan every 1 minute, to change it you can edit it in the values.yaml file (cron format)</p>
+<pre><code>cronSchedule: &#34;* * * * *&#34;
+</code></pre>
+<p>That&#39;s all, now you&#39;re ready to run Advisor as a scheduled job.</p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 200.00px" src="img/50ee30629e4f5330.svg"></p>
+<p>Install Helm Chart</p>
+<p>Run Helm install to start start receiving Advisor&#39;s report to your Slack Channel</p>
+<pre><code>helm install advisor-job ./
+</code></pre>
+</aside>
+<p>Go to your Slack Channel and download the <strong>scan.html</strong> and review the result across the various categories.<br>Positive</p>
+<p>Note that if your didn&#39;t change the default configuration then the Advisor&#39;s scan would run every 1 minute</p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 600.00px" src="img/9d0c51d2e80d78f4.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Uninstall Helm Chart" duration="1">
+        <p>To uninstall the Helm Chart and delete the related files, simply run this:</p>
+<pre><code>helm uninstall advisor-job
+cd /tmp
+rm -rf advisor/
+</code></pre>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 400.00px" src="img/ef0ea234328b5e20.svg"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Additional References" duration="1">
+        <h2 is-upgraded>CI+CD Integration samples</h2>
+<p>See <a href="https://github.com/alcideio/pipeline" target="_blank">https://github.com/alcideio/pipeline</a></p>
+<h2 is-upgraded>GKE Multi-cluster Scan Example</h2>
+<p>See <a href="https://raw.githubusercontent.com/alcideio/pipeline/master/scripts/gke-advisor-scan.sh" target="_blank">gke-advisor-scan.sh</a></p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 700.00px" src="img/9d0c51d2e80d78f4.svg"></p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+
+</body>
+</html>

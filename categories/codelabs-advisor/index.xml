@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>codelabs advisor on Codelabs | Examples | Tutorials</title>
+    <link>https://codelab.alcide.io/categories/codelabs-advisor/</link>
+    <description>Recent content in codelabs advisor on Codelabs | Examples | Tutorials</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 26 Mar 2020 10:51:47 +0530</lastBuildDate>
+    
+	<atom:link href="https://codelab.alcide.io/categories/codelabs-advisor/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>GitHub Actions Integration</title>
+      <link>https://codelab.alcide.io/codelab/advisor-codelab-cicd-github-actions/</link>
+      <pubDate>Thu, 26 Mar 2020 10:51:47 +0530</pubDate>
+      
+      <guid>https://codelab.alcide.io/codelab/advisor-codelab-cicd-github-actions/</guid>
+      <description>In this tutorial we will learn how we can implement continuous security and cluster hygiene for Kubernetes applications in a Github Actions workflow.
+Start Codelab
+ Note: this freely-available edition of Alcide Kubernetes Advisor which scans Kubernetes cluster hygiene and security best practices. Alcide&amp;rsquo;s commercial customers have access to additional scanning features, such as policy driven kubernetes scan, automatic updates, consuming reports from multiple clusters in a single dashboard, and enforcing policies using admission controller.</description>
+    </item>
+    
+    <item>
+      <title>Jenkins Integration</title>
+      <link>https://codelab.alcide.io/codelab/advisor-codelab-cicd-jenkins/</link>
+      <pubDate>Tue, 25 Feb 2020 10:51:47 +0530</pubDate>
+      
+      <guid>https://codelab.alcide.io/codelab/advisor-codelab-cicd-jenkins/</guid>
+      <description>In this tutorial we will learn how we can implement continuous security and cluster hygiene for Kubernetes applications in a Jenkins CI+CD pipeline.
+Start Codelab
+
+ Note: this freely-available edition of Alcide Kubernetes Advisor which scans Kubernetes cluster hygiene and security best practices. Alcide&amp;rsquo;s commercial customers have access to additional scanning features, such as policy driven kubernetes scan, automatic updates, consuming reports from multiple clusters in a single dashboard, and enforcing policies using admission controller.</description>
+    </item>
+    
+    <item>
+      <title>Alcide Advisor Overview</title>
+      <link>https://codelab.alcide.io/codelab/advisor-codelab-overview/</link>
+      <pubDate>Mon, 20 Jan 2020 10:51:47 +0530</pubDate>
+      
+      <guid>https://codelab.alcide.io/codelab/advisor-codelab-overview/</guid>
+      <description>In this tutorial we will learn about Alcide Kubernetes Advisor, and how we can implement continuous security and cluster hygiene for one or more Kubernetes clusters.
+ Note: this freely-available edition of Alcide Kubernetes Advisor which scans Kubernetes cluster hygiene and security best practices. Alcide&amp;rsquo;s commercial customers have access to additional scanning features, such as policy driven kubernetes scan, automatic updates, consuming reports from multiple clusters in a single dashboard, and enforcing policies using admission controller.</description>
+    </item>
+    
+    <item>
+      <title>Prometheus &#43; Grafana &#43; Alcide Advisor</title>
+      <link>https://codelab.alcide.io/codelab/advisor-codelab-grafana-integration/</link>
+      <pubDate>Sun, 19 Jan 2020 10:00:00 +0530</pubDate>
+      
+      <guid>https://codelab.alcide.io/codelab/advisor-codelab-grafana-integration/</guid>
+      <description>In this tutorial we will learn how to integrate Alcide Advisor with Prometheus and Grafana in order to gain security observability of your Kubernetes cluster hygiene and risk by expsoing Alcide Advisor&amp;rsquo;s findings as security metrics.
+ Note: this freely-available edition of Alcide Kubernetes Advisor which scans Kubernetes cluster hygiene and security best practices. Alcide&amp;rsquo;s commercial customers have access to additional scanning features, such as policy driven kubernetes scan, automatic updates, consuming reports from multiple clusters in a single dashboard, and enforcing policies using admission controller.</description>
+    </item>
+    
+    <item>
+      <title>Alcide Advisor Cron Job</title>
+      <link>https://codelab.alcide.io/codelab/advisor-codelab-cronjob/</link>
+      <pubDate>Wed, 01 Jan 2020 13:00:00 +0530</pubDate>
+      
+      <guid>https://codelab.alcide.io/codelab/advisor-codelab-cronjob/</guid>
+      <description>In this tutorial we will deploy Alcide Advisor as an in-cluster cron job and export the report to a slack channel.
+ Note: this freely-available edition of Alcide Kubernetes Advisor which scans Kubernetes cluster hygiene and security best practices. Alcide&amp;rsquo;s commercial customers have access to additional scanning features, such as policy driven kubernetes scan, automatic updates, consuming reports from multiple clusters in a single dashboard, and enforcing policies using admission controller.</description>
+    </item>
+    
+    <item>
+      <title>CircleCI Integration</title>
+      <link>https://codelab.alcide.io/codelab/advisor-codelab-cicd-circleci/</link>
+      <pubDate>Sun, 11 Aug 2019 10:51:47 +0530</pubDate>
+      
+      <guid>https://codelab.alcide.io/codelab/advisor-codelab-cicd-circleci/</guid>
+      <description>In this tutorial we will learn how we can implement continuous security and cluster hygiene for Kubernetes applications in a CircleCI CI+CD pipeline.
+Start Codelab
+
+ Note: this freely-available edition of Alcide Kubernetes Advisor which scans Kubernetes cluster hygiene and security best practices. Alcide&amp;rsquo;s commercial customers have access to additional scanning features, such as policy driven kubernetes scan, automatic updates, consuming reports from multiple clusters in a single dashboard, and enforcing policies using admission controller.</description>
+    </item>
+    
+    <item>
+      <title>Azure DevOps Pipelines Integration</title>
+      <link>https://codelab.alcide.io/codelab/advisor-codelab-cicd-azure-devops/</link>
+      <pubDate>Wed, 31 Jul 2019 10:51:47 +0530</pubDate>
+      
+      <guid>https://codelab.alcide.io/codelab/advisor-codelab-cicd-azure-devops/</guid>
+      <description>In this tutorial we will learn about Alcide Kubernetes Advisor, and how we can implement continuous security and cluster hygiene for one or more Kubernetes clusters in a Azure DevOps pipeline.
+ Azure DevOps on Visual Studio Marketplace can be found here
+ Start Codelab
+
+ Note: this freely-available edition of Alcide Kubernetes Advisor which scans Kubernetes cluster hygiene and security best practices. Alcide&amp;rsquo;s commercial customers have access to additional scanning features, such as policy driven kubernetes scan, automatic updates, consuming reports from multiple clusters in a single dashboard, and enforcing policies using admission controller.</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,161 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client
+  namespace: alcide-demo
+  labels:
+    app: client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: client
+  template:
+    metadata:
+      labels:
+        app: client
+    spec:
+      containers:
+      - name: listener
+        image: gophernet/netcat
+        command:
+          - sh
+          - "-c"
+          - 'while true ; do nc -k -l -p 9000 ; done'
+      - name: connector
+        image: gophernet/netcat
+        ports:
+        - containerPort: 9000
+        command:
+          - sh
+          - "-c"
+          - 'while true ; do sleep 10 ;
+          echo "Hello from client" | nc -w 2 frontend-svc 9000 || true ;
+          echo "Hello from client" | nc -w 2 backend-svc 9000 || true ; done'
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-svc
+  namespace: alcide-demo
+spec:
+  selector:
+    app: client
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: alcide-demo
+  labels:
+    app: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: listener
+        image: gophernet/netcat
+        ports:
+        - containerPort: 9000
+        command:
+          - sh
+          - "-c"
+          - 'while true ; do nc -k -l -p 9000 ; done'
+      - name: connector
+        image: gophernet/netcat
+        command:
+          - sh
+          - "-c"
+          - 'while true ; do sleep 10 ;
+          echo "Hello from frontend" | nc -w 2 client-svc 9000 || true ;
+          echo "Hello from frontend" | nc -w 2 backend-svc 9000 || true ; done'
+
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-svc
+  namespace: alcide-demo
+spec:
+  selector:
+    app: frontend
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000
+
+
+
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: alcide-demo
+  labels:
+    app: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: listener
+        image: gophernet/netcat
+        ports:
+        - containerPort: 9000
+        command:
+          - sh
+          - "-c"
+          - 'while true ; do nc -k -l -p 9000 ; done'
+      - name: connector
+        image: gophernet/netcat
+        command:
+          - sh
+          - "-c"
+          - 'while true ; do sleep 10 ;
+          echo "Hello from backend" | nc -w 2 client-svc 9000 || true ;
+          echo "Hello from backend" | nc -w 2 frontend-svc 9000 || true ; done'
+
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-svc
+  namespace: alcide-demo
+spec:
+  selector:
+    app: backend
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000

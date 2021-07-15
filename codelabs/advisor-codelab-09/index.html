@@ -1,0 +1,148 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Alcide Advisor &#43; Jenkins</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="0"
+                  id="advisor-codelab-09"
+                  title="Alcide Advisor &#43; Jenkins"
+                  environment="web"
+                  feedback-link="https://github.com/alcideio/pipeline">
+    
+      <google-codelab-step label="Welcome" duration="1">
+        <p>In this tutorial we will learn about <strong>Alcide Kubernetes Advisor</strong>, and how we can integrate it with Jenkins to implement continuous security and cluster hygiene for one or more Kubernetes clusters.</p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 300.00px" src="img/c59ad84f35d9d39f.png"></p>
+<p>Alcide Advisor is an agentless Kubernetes audit, compliance and hygiene scanner that&#39;s built to ensure a friction free DevSecOps workflows. Alcide Advisor can be plugged in early in the development process and before moving to production.</p>
+<h3 is-upgraded>With Alcide Advisor, the security checks you can cover includes:</h3>
+<ul>
+<li>Kubernetes infrastructure vulnerability scanning.</li>
+<li>Hunting misplaced secrets, or excessive privileges for secret access.</li>
+<li>Workload hardening from Pod Security to network policies.</li>
+<li>Istio security configuration and best practices.</li>
+<li>Ingress Controllers for security best practices.</li>
+<li>Kubernetes API server access privileges.</li>
+<li>Kubernetes operators security best practices.</li>
+<li>Deployment conformance to labeling, annotating, resource limits and much more ...</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Prerequisites" duration="10">
+        <ul>
+<li><a href="https://jenkins.io/download/" target="_blank">Jenkins 2</a></li>
+<li>Access from your Jenkins pipeline to your K8s cluster</li>
+</ul>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 800.00px" src="img/59db1bd85aca6cb1.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Create a Scan Pipeline" duration="3">
+        <p>Alcide Kubernetes Advisor runs against a kubernetes cluster and requires access to kubeconfig to authenticate &amp; authorize itself to the cluster.</p>
+<p>If your pipeline can run kubectl commands against the cluster successfully - you should be ready to initiate a scan.</p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 400.00px" src="img/ef0ea234328b5e20.svg"></p>
+<h2 is-upgraded>Your Jenkinsfile</h2>
+<pre><code>pipeline {
+    agent any
+    environment {
+        BUILD_TAG = &#34;latest&#34;
+    }
+
+    stages {
+        stage(&#39;Build + Test&#39;) {
+            steps {
+                echo &#34;Build + Test your code&#34;
+            }
+        }
+        stage(&#39;Deploy&#39;) {
+            steps {
+                script {
+                    if (currentBuild.result == &#39;SUCCESS&#39;)
+                        echo &#39;Deploying....&#39;
+                    else
+                        echo &#39;Deployment skipped&#39;
+                }
+            }
+        }
+        //Obtain the scanner
+        stage(&#39;Get Alcide kube-advisor binary&#39;) {
+            steps {
+                dir(&#34;kube-advisor&#34;) {
+                    sh &#34;curl -o kube-advisor https://alcide.blob.core.windows.net/generic/stable/linux/advisor&#34;
+                    sh &#34;chmod +x kube-advisor&#34;
+                }
+            }
+        }
+        //Obtain the scanner
+        stage(&#39;kube-advisor Scan&#39;){
+            steps{
+                dir(&#34;kube-advisor&#34;) {
+                    sh &#34;&#34;&#34;#!/bin/bash
+                    CURRENT_CONTEXT=`kubectl config current-context`
+                    ./kube-advisor --eula-sign validate cluster --cluster-context \$CURRENT_CONTEXT --namespace-include=&#34;*&#34; --outfile kube-advisor-report.html
+                &#34;&#34;&#34;
+
+                    // Archive the built artifacts
+                    archive includes: &#34;kube-advisor-report.html&#34;
+
+                    // publish html
+                    publishHTML target: [
+                            allowMissing: false,
+                            alwaysLinkToLastBuild: false,
+                            keepAll: true,
+                            reportDir: &#34;.&#34;,
+                            reportFiles: &#34;kube-advisor-report.html&#34;,
+                            reportName: &#34;advisor-report&#34;
+                    ]
+                }
+            }
+        }        
+    }
+}
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Review the scan report in your pipeline artifact" duration="0">
+        <p>The pipeline will publish the scan results into your <em>Build Artifacts</em> under the <strong>advisor-report</strong> directory</p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 200.00px" src="img/f18e75f47e36fc30.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Summary" duration="1">
+        <p>In this codelab we added an automated scan of <em>K8s</em> cluster as an step in your <em>Jenkins</em> deployment pipeline.</p>
+<p class="image-container"><img alt="Alcide Code-to-production security" style="width: 400.00px" src="img/ef0ea234328b5e20.svg"></p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+
+</body>
+</html>

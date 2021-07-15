@@ -1,0 +1,27 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2021-07-15T12:22:11Z",
+  "id": "kaudit-codelab-01",
+  "duration": 12,
+  "title": "Alcide kAudit",
+  "summary": "Alcide kAudit | Kubernetes Audit Security",
+  "source": "kaudit-codelab-01.md",
+  "theme": "",
+  "status": [
+    "public"
+  ],
+  "category": [
+    "kubernetes",
+    "security",
+    "audit"
+  ],
+  "tags": [
+    "kubernetes"
+  ],
+  "feedback": "https://github.com/alcideio/kaudit",
+  "ga": "0",
+  "url": "kaudit-codelab-01"
+}

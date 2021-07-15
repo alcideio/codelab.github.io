@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Multi Cluster Scans (GKE) - Codelabs | Examples | Tutorials</title>
+<meta name="description" content="In this codelab we will create a script that given a GCP Project, we will scan the entire GKE clusters in the project, using Alcide Kubernetes Advisor. The scripting implemented in this codelab, can than be used to integrate into a nightly cron job in your pipeline.
+Start Codelab
+
+ Note: this freely-available edition of Alcide Kubernetes Advisor which scans Kubernetes cluster hygiene and security best practices. Alcide&amp;rsquo;s commercial customers have access to additional scanning features, such as policy driven kubernetes scan, automatic updates, consuming reports from multiple clusters in a single dashboard, and enforcing policies using admission controller."/>
+<meta name="robots" content="noodp"/>
+<link rel="canonical" href="https://codelab.alcide.io/codelab/advisor-codelab-multi-cluster-gke/" />
+
+
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:description" content="In this codelab we will create a script that given a GCP Project, we will scan the entire GKE clusters in the project, using Alcide Kubernetes Advisor. The scripting implemented in this codelab, can than be used to integrate into a nightly cron job in your pipeline.
+Start Codelab
+
+ Note: this freely-available edition of Alcide Kubernetes Advisor which scans Kubernetes cluster hygiene and security best practices. Alcide&amp;rsquo;s commercial customers have access to additional scanning features, such as policy driven kubernetes scan, automatic updates, consuming reports from multiple clusters in a single dashboard, and enforcing policies using admission controller." />
+<meta name="twitter:title" content="Multi Cluster Scans (GKE) - Codelabs | Examples | Tutorials" />
+<meta name="twitter:site" content="https://twitter.com/alcideio" />
+<meta name="twitter:creator" content="https://twitter.com/alcideio" />
+
+
+<meta property="og:type" content="article" />
+<meta content="Multi Cluster Scans (GKE) - Codelabs | Examples | Tutorials" property="og:title">
+<meta content="In this codelab we will create a script that given a GCP Project, we will scan the entire GKE clusters in the project, using Alcide Kubernetes Advisor. The scripting implemented in this codelab, can than be used to integrate into a nightly cron job in your pipeline.
+Start Codelab
+
+ Note: this freely-available edition of Alcide Kubernetes Advisor which scans Kubernetes cluster hygiene and security best practices. Alcide&amp;rsquo;s commercial customers have access to additional scanning features, such as policy driven kubernetes scan, automatic updates, consuming reports from multiple clusters in a single dashboard, and enforcing policies using admission controller." property="og:description">
+<meta property="og:url" content="https://codelab.alcide.io/codelab/advisor-codelab-multi-cluster-gke/" />
+<meta property="og:site_name" content="Codelabs | Examples | Tutorials" />
+<meta property="article:published_time" content="2019-10-26 00:00:01 &#43;0530 &#43;0530" />
+
+
+
+
+
+<script type="application/ld+json">
+{ 
+    "@context": "http://schema.org", 
+    "@type": "BlogPosting",
+    "headline": "Multi Cluster Scans (GKE)",
+    "genre": "",  
+    "url": "https:\/\/codelab.alcide.io\/codelab\/advisor-codelab-multi-cluster-gke\/",
+    "datePublished": "2019-10-26 00:00:01 \x2b0530 \x2b0530",
+    "description": "In this codelab we will create a script that given a GCP Project, we will scan the entire GKE clusters in the project, using Alcide Kubernetes Advisor. The scripting implemented in this codelab, can than be used to integrate into a nightly cron job in your pipeline.\nStart Codelab\n\n Note: this freely-available edition of Alcide Kubernetes Advisor which scans Kubernetes cluster hygiene and security best practices. Alcide\x26rsquo;s commercial customers have access to additional scanning features, such as policy driven kubernetes scan, automatic updates, consuming reports from multiple clusters in a single dashboard, and enforcing policies using admission controller.",
+    "author": {
+        "@type": "Person",
+        "name": ""
+    }
+ }
+</script>
+
+
+
+
+<link rel="stylesheet" href="/sass/main.css">
+<link rel="shortcut icon" href="https://www.alcide.io/wp-content/themes/alcide/favicon.ico">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i&display=swap" rel="stylesheet">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <div>
+          <a target="_blank" href="https://www.alcide.io"><img class="navbar-logo" src="/images/alcide-header-logo.png" alt="Page(/codelab/advisor-codelab-multi-cluster-gke.md)"></a>                   
+          <a class="navbar-brand" href="https://codelab.alcide.io/">Codelabs | Examples | Tutorials</a>
+      </div>                      
+
+      <span>
+
+        </span>
+    </div>
+
+    
+    <div class="collapse navbar-collapse " id="bs-example-navbar-collapse-1">
+        
+
+            <ul class="nav navbar-nav navbar-right">
+        <li><a href="https://www.alcide.io/pricing#free-forever"  target="_blank">Sign Up</a></li>
+        <li><a href="https://codelab.alcide.io/pages/about/">About</a></li>
+        
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+</header>
+
+
+    <div class="container">
+      <div class="wrapper">
+        
+<div class="row">
+<div class="col-md-8">
+<article class="post">
+
+  <header class="post-header">
+    <h1 class="post-title">Multi Cluster Scans (GKE)</h1>
+  </header>
+
+  <div class="post-content">
+    <p>In this codelab we will create a script that given a <em>GCP Project</em>, we will scan the entire GKE clusters in the project, using Alcide Kubernetes Advisor.
+The scripting implemented in this codelab, can than be used to integrate into a nightly cron job in your pipeline.</p>
+
+<p><a href="/codelabs/advisor-codelab-04/" class="btn btn-primary" role="button">Start Codelab</a></p>
+
+<p><a href="/codelabs/advisor-codelab-03/">
+<img src="/images/codelab-advisor-03.png" alt="Lets Start" width="600"/></a></p>
+
+<blockquote>
+<p>Note: this freely-available edition of Alcide Kubernetes Advisor which scans Kubernetes cluster hygiene and security best practices. Alcide&rsquo;s commercial customers have access to <em>additional scanning features</em>, such as policy driven kubernetes scan, automatic updates, consuming reports from multiple clusters in a single dashboard, and enforcing policies using admission controller. <a href="https://www.alcide.io/pricing">Claim your &lsquo;Free Forever&rsquo; Account</a></p>
+</blockquote>
+
+    
+    
+    
+    
+    
+         
+  </div>
+
+</article>
+</div>
+<div class="col-md-4 mt20">
+        <div class="post-img">
+           
+            <img width="600" src="https://codelab.alcide.io/images/gke-scan.png" alt="Multi Cluster Scans (GKE)">
+            
+        </div>
+            
+        
+        <div class="mt10 recent">
+            <h4>Recent articles</h4>        
+             <ul>
+                
+
+                      <li>
+                      <p><a href="https://codelab.alcide.io/codelab/kaudit-codelab-eks-onboarding/">Alcide kAudit with EKS</a><small class="panel-date">&nbsp;&nbsp;May 13, 2020</small></p>
+                      </li>
+
+                
+
+                      <li>
+                      <p><a href="https://codelab.alcide.io/codelab/kaudit-codelab-usecases/">kAudit Use-Cases</a><small class="panel-date">&nbsp;&nbsp;April 2, 2020</small></p>
+                      </li>
+
+                
+
+                      <li>
+                      <p><a href="https://codelab.alcide.io/codelab/runtime-codelab-process-whitelisting2/">Process Whitelisting - hello world</a><small class="panel-date">&nbsp;&nbsp;March 29, 2020</small></p>
+                      </li>
+
+                
+              </ul>
+        </div>
+        
+        <br>
+
+</div>
+</div>
+
+
+
+      </div>
+    </div>
+
+    <footer>
+    <div class="container">
+        <div class="row p20">
+            
+                <div class="col-md-4 text-center mt-4">
+                </div>
+            
+
+            <div class="col-md-4 text-center p10" >
+                <div>
+                
+                        <small>All rights reserved by <a target="_blank" href="https://www.alcide.io">Alcide IO Ltd.</a></small>
+                               
+                </div>                
+                <div>
+                 <a target="_blank" href="https://www.alcide.io"><img class="footer-logo" src="images/alcide-logo-blue.png" alt="Page(/codelab/advisor-codelab-multi-cluster-gke.md)"></a>                   
+                </div>
+
+            </div>
+            <div class="col-md-4 text-center">
+               
+               
+                
+                <a target="_blank" href="https://linkedin.com/company/alcide"><li class="social linkedin"><i class="fa fa-linkedin-square"></i></li></a>
+                                
+               
+                <a target="_blank" href="https://twitter.com/alcideio"><li class="social twitter"><i class="fa fa-twitter-square"></i></li></a>
+                
+               
+                <a target="_blank" href="https://github.com/alcideio"><li class="social github"><i class="fa fa-github-square"></i></li></a>
+                
+               
+                <a target="_blank" href="mailto:info@alcide.io"><li class="social email"><i class="fa fa-envelope"></i></li></a>
+                
+            </div>
+
+        </div> 
+    </div>
+</footer>
+    
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+  <script src="https://codelab.alcide.io//js/bootstrap.min.js"></script>
+   
+     
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-89595507-1', 'auto');
+  ga('send', 'pageview');
+</script>
+  
+  </body>
+
+</html>

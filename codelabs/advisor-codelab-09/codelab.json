@@ -1,0 +1,28 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2021-07-15T12:22:11Z",
+  "id": "advisor-codelab-09",
+  "duration": 15,
+  "title": "Alcide Advisor + Jenkins",
+  "summary": "Alcide Kubernetes Advisor | Jenkins",
+  "source": "advisor-codelab-09.md",
+  "theme": "",
+  "status": [
+    "public"
+  ],
+  "category": [
+    "kubernetes",
+    "security",
+    "advisor",
+    "jenkins"
+  ],
+  "tags": [
+    "kubernetes"
+  ],
+  "feedback": "https://github.com/alcideio/pipeline",
+  "ga": "0",
+  "url": "advisor-codelab-09"
+}

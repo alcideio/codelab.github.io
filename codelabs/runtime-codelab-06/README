@@ -1,0 +1,2 @@
+docker run --rm -v "$PWD":/usr/src/my-app -w /usr/src/my-app golang:latest go build -o my-app -v hello.go
+docker run --rm -v "$PWD":/usr/src/malicious-app -w /usr/src/malicious-app golang:latest go build -o malicious-app -v malicious.go
